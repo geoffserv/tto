@@ -18,9 +18,14 @@ Classes
 Tto : Main class for config, all gfx/midi/io, runtime, and shutdown of tto.
 """
 
-from tto_globals import TtoGlobals
+import tto_globals
+from tto_midi import TtoMidi
 
 
-class Tto:
+class Tto(object):
     def __init__(self):
-        pass
+        tto_globals.midi = TtoMidi()
+
+
+if __name__ == "__main__":
+    tto = Tto()
