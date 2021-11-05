@@ -24,7 +24,7 @@ class TtoMidi(object):
     def __init__(self):
         self.ports = {}
 
-        self.channel_out = 0
+        self.channel_out = 0  # 0-15, but in the Real World it's 1-16
         self.channel_in = 0
 
         self.detect_midi_ports()
@@ -43,9 +43,15 @@ class TtoMidi(object):
 
     def detect_midi_ports(self):
         if tto_globals.config['tto'].getboolean('MidiInEnabled'):
+            tto_globals.debugger.message("INFO", "Current MIDI Channel In: {}".
+                                         format(self.channel_in + 1))
             tto_globals.debugger.message("INFO", "MIDI In Ports Detected: {}".
                                          format(mido.get_input_names()))
+
         if tto_globals.config['tto'].getboolean('MidiOutEnabled'):
+            tto_globals.debugger.message("INFO",
+                                         "Current MIDI Channel Out: {}".
+                                         format(self.channel_out + 1))
             tto_globals.debugger.message("INFO", "MIDI Out Ports Detected: {}".
                                          format(mido.get_output_names()))
 
@@ -76,29 +82,35 @@ class TtoMidi(object):
                     midi_port_name))
 
     def ports_close(self):
-        for port in tto_globals.midi.ports:
+        for port in self.ports:
             try:
                 tto_globals.debugger.message("INFO",
                                              "Closing MIDI port {}".format(
                                                  port))
-                tto_globals.midi.ports[port].close()
+                self.ports[port].close()
             except Exception as e:
                 tto_globals.debugger.message("EXCEPTION",
                                              "Error closing MIDI port {}: {}".
                                              format(port, e))
 
-    def forward_messages(self):
-        # https://mido.readthedocs.io/en/latest/message_types.html
-        # if self.port_in and self.port_out:
-        #     for msg in self.port_in:
-        #         if msg.type == "clock" or \
-        #                        "songpos" or \
-        #                        "start" or \
-        #                        "continue" or \
-        #                        "stop" or \
-        #                        "reset":
-        #             # MIDI generally will send 24 PPQ (pulses per quarter)
-        #             tto_globals.debugger.log_stat("MidiInTypeClock", 1)
-        #             tto_globals.debugger.report_stat("MidiInTypeClock", mod=24)
-        #             self.port_out.send(msg)
-        pass
+    def handle_messages(self):
+        # Non-blocking method run once per main-loop execution cycle
+        # Handle everything needed for MIDI during the course of normal runtime
+
+        # Process incoming MIDI
+        if self.ports and "MidiInPort" in self.ports:
+            for midi_msg in self.ports["MidiInPort"].iter_pending():
+
+                # Handle clock-related stuff:
+                if midi_msg.type == "clock" or \
+                                    "songpos" or \
+                                    "start" or \
+                                    "continue" or \
+                                    "stop" or \
+                                    "reset":
+                    self.handle_clock(midi_msg)
+
+    def handle_clock(self, midi_msg):
+        # MIDI generally will send 24 PPQ (pulses per quarter)
+        tto_globals.debugger.log_stat("MidiInMsgsTypeClockTotal", 1)
+

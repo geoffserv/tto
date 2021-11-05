@@ -53,4 +53,4 @@ config['tto'] = {}
 
 config_file_load("tto.cfg")
 
-midi = None
+midi = None  # None until this is set-up by tto.py

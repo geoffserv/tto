@@ -32,6 +32,9 @@ def tto_terminate():
         tto_globals.midi.ports_close()
 
     tto_globals.debugger.message("INFO", "Completed program termination")
+
+    tto_globals.debugger.summary()
+
     tto_globals.debugger.exit("Have a nice day :)")
 
 
@@ -49,7 +52,8 @@ class Tto(object):
         self.running = True
 
         while self.running:
-            tto_globals.midi.forward_messages()
+            tto_globals.debugger.log_execution_hz()
+            tto_globals.midi.handle_messages()
 
 
 if __name__ == "__main__":

@@ -30,6 +30,24 @@ class TtoDebugger(object):
 
         self.message("INFO", "Started debugger")
 
+        self.runtime_ticks = 0
+        self.runtime_tick_time = time.time()
+        self.runtime_mhz = 0
+
+    def log_execution_hz(self):
+        # Non-blocking method run once per main-loop execution cycle
+        # Tracks and reports loop execution speed
+        sample_size = 1000000
+        self.runtime_ticks += 1
+        if self.runtime_ticks > sample_size:
+            self.runtime_mhz = ((sample_size / (time.time() -
+                                                self.runtime_tick_time)) /
+                                1000000)
+            self.message("CNTR", "(Counter) Main loop execution MHz: {}".
+                         format(self.runtime_mhz))
+            self.runtime_ticks = 0
+            self.runtime_tick_time = time.time()
+
     def log_stat(self, statistic, increment: int, value=0):
         if statistic not in self.stats:
             self.stats[statistic] = int(increment) or int(value)
@@ -44,8 +62,9 @@ class TtoDebugger(object):
 
     def report_stat(self, statistic, mod=100):
         if self.printEnabled and statistic in self.stats:
-            if self.stats[statistic] % mod == 0:
-                self.message("INFO", "Counter Stat: {} Value: {}".format(
+            if (self.stats[statistic] == 1) or \
+                    (self.stats[statistic] % mod == 0):
+                self.message("CNTR", "(Counter) {}: {}".format(
                     statistic, self.stats[statistic]))
 
     def message(self, severity, message):
@@ -64,9 +83,9 @@ class TtoDebugger(object):
 
     def summary(self):
         for stat in self.stats:
-            self.message("DEBUG SUMMARY",
+            self.message("DEBUG",
                          "{}: {}".format(stat, self.stats[stat]))
-        self.message("DEBUG SUMMARY",
+        self.message("DEBUG",
                      "Runtime: {} seconds".format((
                              self.messages[-1]["timestamp"] -
                              self.messages[0]["timestamp"])))
