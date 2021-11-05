@@ -40,6 +40,12 @@ class TtoDebugger(object):
         else:
             return int(self.stats[statistic])
 
+    def report_stat(self, statistic, mod=100):
+        if self.printEnabled and statistic in self.stats:
+            if self.stats[statistic] % mod == 0:
+                self.message("INFO", "Counter Stat: {} Value: {}".format(
+                    statistic, self.stats[statistic]))
+
     def message(self, severity, message):
         timestamp = time.time()
         self.messages.append({"severity": severity,
@@ -63,12 +69,3 @@ class TtoDebugger(object):
                              self.messages[-1]["timestamp"] -
                              self.messages[0]["timestamp"])))
 
-    def progress(self, processed, total):
-        if self.printEnabled:
-            if (processed == 1) or (processed % 1000 == 0):
-                percent_complete = int((processed / total) * 100)
-                print("\r", end="")
-                print("PROGRESS- Estimated build progress:",
-                      percent_complete, "%", end="")
-            if processed == total:
-                print(" ... Done.")

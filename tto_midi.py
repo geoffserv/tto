@@ -25,6 +25,9 @@ class TtoMidi(object):
         port_out = None
         port_in = None
 
+        channel_out = 0
+        channel_in = 0
+
         if tto_globals.config['tto'].getboolean('MidiOutEnabled'):
             tto_globals.debugger.message("INFO", "MIDI OUT Enabled")
             tto_globals.debugger.message("INFO", "    OUT Ports: {}".format(
@@ -53,7 +56,7 @@ class TtoMidi(object):
                                              tto_globals.config['tto']
                                              ['MidiInPort']))
             try:
-                self.port_out = mido.open_input(tto_globals.config['tto']
+                self.port_in = mido.open_input(tto_globals.config['tto']
                                                  ['MidiInPort'].strip('"'))
                 tto_globals.debugger.message("INFO",
                                              "    Successfully opened IN")
@@ -63,3 +66,17 @@ class TtoMidi(object):
                 tto_globals.debugger.exit(
                     "MIDI IN enabled but could not open port.")
 
+    def forward_messages(self):
+        # https://mido.readthedocs.io/en/latest/message_types.html
+        if self.port_in and self.port_out:
+            for msg in self.port_in:
+                if msg.type == "clock" or \
+                               "songpos" or \
+                               "start" or \
+                               "continue" or \
+                               "stop" or \
+                               "reset":
+                    # MIDI generally will send 24 PPQ (pulses per quarter)
+                    tto_globals.debugger.log_stat("MidiInTypeClock", 1)
+                    tto_globals.debugger.report_stat("MidiInTypeClock", mod=24)
+                    self.port_out.send(msg)

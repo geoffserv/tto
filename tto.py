@@ -12,6 +12,7 @@ and structure improvements.
 Requirements
 ------------
 tto_globals : Program-wide global variable module for tto
+tto_midi : MIDI message handler for tto.
 
 Classes
 -------
@@ -26,6 +27,16 @@ class Tto(object):
     def __init__(self):
         tto_globals.midi = TtoMidi()
 
+        self.running = False  # Will be True once self.run() is called
+
+    def run(self):
+        tto_globals.debugger.message("INFO", "Entering run state")
+        self.running = True
+
+        while self.running:
+            tto_globals.midi.forward_messages()
+
 
 if __name__ == "__main__":
     tto = Tto()
+    tto.run()

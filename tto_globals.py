@@ -9,7 +9,6 @@ Requirements
 ------------
 configparser : Basic configuration language parser.
 tto_debugger : Error and info message handler for tto.
-tto_midi : MIDI message handler for tto.
 
 Classes
 -------
