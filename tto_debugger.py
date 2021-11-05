@@ -23,8 +23,10 @@ class TtoDebugger(object):
         self.stats = {}
         self.messages = []
         self.printEnabled = True
+
+        # self.time_format for how to display timestamps on-screen
         # https://docs.python.org/3/library/time.html#time.strftime
-        self.time_format = "%Y-%m-%d %H:%M:%S"
+        self.time_format = "%Y-%m-%d %H:%M:%S %z"
 
         self.message("INFO", "Started debugger")
 

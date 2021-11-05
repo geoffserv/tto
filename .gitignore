@@ -1,6 +1,3 @@
-# My virtualenv stuff
-venv/
-
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -133,3 +130,9 @@ dmypy.json
 
 # tto project specific files
 /tto.cfg
+
+# VI Swap files
+.*.swp
+
+# JetBrains IDEA files
+.idea/
