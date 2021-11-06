@@ -7,39 +7,50 @@ states, etc for tto.
 
 Requirements
 ------------
-configparser : to read machine-specific config file containing program options.
-tto_debugger : logging module for tto
+configparser : Basic configuration language parser.
+tto_debugger : Error and info message handler for tto.
 
 Classes
 -------
-TtoGlobals : handles instrument configuration files and options.
+tbd : tbd
+
+Functions
+---------
+config_file_load : Accepts a (config_file) and attempts to load config options.
 
 Variables
 ---------
-tto_globals : global instance of TtoGlobals class for use program-wide
+debugger : Global instance of TtoDebugger class for logging.
+config : Global instance of configparser containing program options.
+midi: If MIDI enabled, global instance of TtoMidi for message handling.
 """
 
 from configparser import ConfigParser
 from tto_debugger import TtoDebugger
 
 
-class TtoGlobals:
-    def __init__(self, config_file="tto.cfg"):
-        self.debugger = TtoDebugger()
-        self.debugger.message("INFO", "Started debugger")
-
-        self.config = ConfigParser()
-        self.config['DEFAULT'] = {'MidiOutEnabled': 'False'}
-        self.config['tto'] = {}
-
-        self.debugger.message("INFO", "Loading config file: {}".format(
-            config_file))
-        self.config.read(config_file)
-        self.debugger.message("INFO", "Config Sections: {}".format(
-            self.config.sections()))
-        for key in self.config['tto']:
-            self.debugger.message("INFO", "    Key: {}, Value: {}".format(
-                key, self.config['tto'][key]))
+def config_file_load(config_file):
+    global debugger
+    global config
+    debugger.message("INFO", "Loading config file: {}".format(
+        config_file))
+    config.read(config_file)
+    debugger.message("INFO", "Config Sections: {}".format(
+        config.sections()))
+    for key in config['tto']:
+        debugger.message("INFO", "    Key: {}, Value: {}".format(
+            key, config['tto'][key]))
 
 
-tto_globals = TtoGlobals()  # Globally instanciate TtoGlobals
+debugger = TtoDebugger()
+
+config = ConfigParser()
+config['DEFAULT'] = {'MidiOutEnabled': 'False'}
+config['DEFAULT'] = {'MidiOutPort': 'wavestate 1 In'}
+config['DEFAULT'] = {'MidiInEnabled': 'False'}
+config['DEFAULT'] = {'MidiInPort': 'USB Midi '}
+config['tto'] = {}
+
+config_file_load("tto.cfg")
+
+midi = None  # None until this is set-up by tto.py
