@@ -34,7 +34,7 @@ class TtoDebugger(object):
         self.runtime_tick_time = time.time()
         self.runtime_mhz = 0
 
-    def log_execution_hz(self):
+    def perf_monitor(self):
         # Non-blocking method run once per main-loop execution cycle
         # Tracks and reports loop execution speed
         sample_size = 1000000
