@@ -11,13 +11,16 @@ tto_globals : Program-wide global variable module for tto
 tto_midi : MIDI message handler for tto.
 atexit : Trap exit conditions to handle program termination gracefully.
 
-Classes
--------
-Tto : Main class for config, all gfx/midi/io, runtime, and shutdown of tto.
+Functions
+---------
+tto_init() : Initialize environment for tto.
+tto_run() : Run tto main loop
+tto_terminate() : Gracefully terminate the program.
 """
 
 import tto_globals
 from tto_midi import TtoMidi
+from tto_pygame import TtoPygame, pygame_terminate
 import atexit
 
 
@@ -36,39 +39,56 @@ def tto_terminate():
         # Try to close all open MIDI ports
         tto_globals.midi.ports_close()
 
+    if tto_globals.pygame:
+        pygame_terminate()
+
     # Show a debugger summary
     tto_globals.debugger.summary()
 
     tto_globals.debugger.exit("Completed program termination")
 
 
-class Tto(object):
-    def __init__(self):
+def tto_init():
+    # Register the tto_terminate() function to run any time the program
+    # terminates for any reason, using the atexit library.
+    atexit.register(tto_terminate)
 
-        # Register the tto_terminate() function to run any time the program
-        # terminates for any reason, using the atexit library.
-        atexit.register(tto_terminate)
+    # Instanciate a mido object and init MIDI
+    tto_globals.midi = TtoMidi()
 
-        # Instanciate a midi object and attach to tto_globals
-        tto_globals.midi = TtoMidi()
+    # Instanciate a pygame object and init graphics
+    tto_globals.pygame = TtoPygame()
 
-        self.running = False  # Will be True once self.run() is called
+    tto_globals.running = False  # Will be True once self.run() is called
 
-    def run(self):
-        tto_globals.debugger.message("INFO", "Entering run state")
-        self.running = True
 
-        while self.running:
+def tto_run():
+    tto_globals.debugger.message("INFO", "Entering run state")
+    tto_globals.running = True
 
-            #################
-            # Main run Loop #
-            #################
+    while tto_globals.running:
 
-            tto_globals.debugger.perf_monitor()  # Run loop perf monitoring
+        #################
+        # Main run Loop #
+        #################
 
-            tto_globals.midi.handle_messages()
+        # Main run loop performance monitoring
+        tto_globals.debugger.perf_monitor()
+
+        # Poll user input, update pygame, and populate tto_globals.events
+        tto_globals.pygame.handle_pygame()
+
+        # Receive and send MIDI
+        tto_globals.midi.handle_messages()
+
+        # Clear the events dict.  All events have been handled.
+        tto_globals.events = {}
+
+        #####################
+        # End Main run Loop #
+        #####################
 
 
 if __name__ == "__main__":
-    tto = Tto()
-    tto.run()
+    tto_init()
+    tto_run()

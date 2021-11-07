@@ -42,15 +42,57 @@ def config_file_load(config_file):
             key, config['tto'][key]))
 
 
-debugger = TtoDebugger()
+debugger = TtoDebugger()  # Program-wide logger and debugger
 
-config = ConfigParser()
+config = ConfigParser()  # Program-wide configuration
+# These defaults apply unless overridden in the config file ['tto'] section:
 config['DEFAULT'] = {'MidiOutEnabled': 'False'}
 config['DEFAULT'] = {'MidiOutPort': 'wavestate 1 In'}
 config['DEFAULT'] = {'MidiInEnabled': 'False'}
 config['DEFAULT'] = {'MidiInPort': 'USB Midi '}
+config['DEFAULT'] = {'FullScreen': 'True'}
+config['DEFAULT'] = {'CanvasWidth': '1920'}
+config['DEFAULT'] = {'CanvasHeight': '1080'}
+config['DEFAULT'] = {'GraphicsEnabled': 'True'}
+config['DEFAULT'] = {'Powermate': 'False'}
+# Create a ['tto'] section containing the above defaults:
 config['tto'] = {}
 
+# Load the config file values overtop of the defaults above:
 config_file_load("tto.cfg")
 
+# Define some colors for convenience and readability
+color_black = (0, 0, 0)
+color_white = (255, 255, 255)
+color_red = (255, 0, 0)
+color_orange = (255, 94, 19)
+color_orange_25 = (64, 23, 4)
+color_orange_50 = (128, 47, 9)
+color_orange_75 = (191, 69, 13)
+
+# If I try to render things like text, corners of polygons, etc right up
+# against the edge of a surface, then there is often clipping.  So, track
+# a global canvas_margin to offset all coordinate systems and give some
+# empty space around the edges of each surface.
+# Define a default canvas_margin:
+canvas_margin = 10
+
+keyboard_layout = {}
+
+# tto program-wide events are added to the tto_globals.events dict,
+# typically by the pygame module handle_input method.
+# Most commonly, KEYDOWN / KEYUP.
+# But, any module could add or view events if needed.
+# At the end of each main loop run, this will be erased.  Each
+# module in the main loop had a chance to inspect and action on any
+# necessary events.
+#
+# The dict key is just an informative label and helps dedup events to prevent
+# redundant entries.
+events = {}
+
+running = False  # Main loop running boolean.  Set to false and program ends.
+
 midi = None  # None until this is set-up by tto.py
+
+pygame = None  # None until set-up by tto.py

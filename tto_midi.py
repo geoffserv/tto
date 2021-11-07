@@ -1,5 +1,4 @@
-"""
-tto_midi - MIDI message handler for tto
+"""tto_midi - MIDI message handler for tto
 
 This module handles midi messages received and produced during tto runtime.
 
@@ -7,7 +6,6 @@ This module handles midi messages received and produced during tto runtime.
 Requirements
 ------------
 tto_globals : Program-wide global variable module for tto.
-tto_debugger : Error and info message handler for tto.
 mido : A library for working with MIDI message and ports.
 python-rtmidi : rtmidi backend for mido.
 time : to calculate math around bpm
@@ -131,7 +129,7 @@ class TtoMidi(object):
         if "MidiOutPort" in self.ports:
             try:
                 tto_globals.debugger.message("MIDI",
-                                         "Sending panic() to MIDI out port")
+                                             "Sending panic() to MIDI Out")
                 self.ports["MidiOutPort"].panic()
             except Exception as e:
                 tto_globals.debugger.message("EXCEPTION",
