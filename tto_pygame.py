@@ -166,13 +166,23 @@ class TtoPygame(object):
                 self.handle_input_key(event)
 
     def handle_input_key(self, event):
-        """Filter out KEY-based input signals and action as necessary
+        """Filter out KEY-based input signals and add to tto_globals.events
         """
-        # Only examine KEYDOWNs and KEYUPs:
-        if event.type in (pygame.KEYDOWN, pygame.KEYUP):
+        if event.type in (pygame.KEYUP, pygame.KEYDOWN):
+            event_type = "NA"  # Unknown type
+            if event.type == pygame.KEYUP:
+                event_type = "KU"  # KeyUp
+            if event.type == pygame.KEYDOWN:
+                event_type = "KD"  # KeyDown
+
+            event_label = "{}_{}".format(event_type, event.key)
             tto_globals.debugger.message("PYGA",
-                                         "Detected pygame.event: {}".
-                                         format(event))
+                                         "handle_input_key() detected: {}".
+                                         format(event_label))
+            tto_globals.events[event_label] = {'type': event_type,
+                                               'keycode': event.key,
+                                               'event': event}
+
 
     def init_gui_surfaces(self):
         """Set-up all GUI elements here, and append() each to gui_surfaces
@@ -317,8 +327,8 @@ class GUISurfaceKeyboardMap(GUISurface):
         super(self.__class__, self).__init__(canvas_width, canvas_height,
                                              blit_x, blit_y, **kwargs)
 
-        self.cols = 12
-        self.rows = 4
+        self.cols = tto_globals.keyboard_cols
+        self.rows = tto_globals.keyboard_rows
 
         self.color = tto_globals.color_orange_50
 
@@ -390,38 +400,115 @@ class GUISurfaceKeyboardMap(GUISurface):
         # Draw the keyboard
         for row in range(self.rows):
             for col in range(self.cols):
+                # Background square color
                 rect_key = pygame.Rect(110 + (col * 70),
                                        10 + (row * 70),
                                        60,
                                        60)
                 pygame.draw.rect(self.surface,
-                                 self.color,
+                                 tto_globals.keyboard_layout[row][col]
+                                 ['button_color_bg'],
+                                 rect_key,
+                                 0)
+                # Foreground square border
+                rect_key = pygame.Rect(110 + (col * 70),
+                                       10 + (row * 70),
+                                       60,
+                                       60)
+                pygame.draw.rect(self.surface,
+                                 tto_globals.keyboard_layout[row][col]
+                                 ['button_color_fg'],
                                  rect_key,
                                  1)
-                # Per-button label 1
+                # Per-button label 1 - 5 char width
                 self.draw_label(coordinates=(110 + (col * 70) + 4,
                                              10 + (row * 70) ),
                                 degrees=0,
-                                text_label="{},{}".format(row, col),
+                                text_label="{}".format(
+                                    tto_globals.keyboard_layout[row][col]
+                                    ['button_label_1']),
                                 font=self.font,
-                                color=self.color,
+                                color=tto_globals.keyboard_layout[row][col]
+                                 ['button_color_fg'],
                                 align="left")
-                # Per-button label 2
+                # Per-button label 2 - 5 char width
                 self.draw_label(coordinates=(110 + (col * 70) + 4,
                                              10 + (row * 70)  + 20),
                                 degrees=0,
-                                text_label="12345",
+                                text_label="{}".format(
+                                    tto_globals.keyboard_layout[row][col]
+                                    ['button_label_2']),
                                 font=self.font,
-                                color=self.color,
+                                color=tto_globals.keyboard_layout[row][col]
+                                 ['button_color_fg'],
                                 align="left")
-                # Per-button label 3
+                # Per-button label 3 - 5 char width
                 self.draw_label(coordinates=(110 + (col * 70) + 4,
                                              10 + (row * 70) + 40),
                                 degrees=0,
-                                text_label="12345",
+                                text_label="{}".format(
+                                    tto_globals.keyboard_layout[row][col]
+                                    ['button_label_3']),
                                 font=self.font,
-                                color=self.color,
+                                color=tto_globals.keyboard_layout[row][col]
+                                 ['button_color_fg'],
                                 align="left")
+
+    def update_control_invert_button_colors(self, row, col):
+        # Flip-flop foreground and background colors
+        if (tto_globals.keyboard_layout[row][col]['button_color_bg'] ==
+           tto_globals.keyboard_layout[row][col]['button_color_bg_default']):
+            tto_globals.keyboard_layout[row][col]['button_color_bg'] = \
+                tto_globals.keyboard_layout[row][col]\
+                ['button_color_bg_on']
+            tto_globals.keyboard_layout[row][col]['button_color_fg'] = \
+                tto_globals.keyboard_layout[row][col]\
+                ['button_color_bg_default']
+        else:
+            tto_globals.keyboard_layout[row][col]['button_color_fg'] = \
+                tto_globals.keyboard_layout[row][col]\
+                ['button_color_fg_default']
+            tto_globals.keyboard_layout[row][col]['button_color_bg'] = \
+                tto_globals.keyboard_layout[row][col]\
+                ['button_color_bg_default']
+
+
+    def update_control(self):
+        """ Overriding GUISurface.update_control()
+        """
+        self.needs_rendering = False
+        for event in tto_globals.events:
+            tto_globals.debugger.message(
+                "PYGA",
+                "GUISurfaceKeyboardMap update_control() saw event: {}".format(
+                    event))
+
+            if tto_globals.events[event]['type'] == "KD":
+                # Seeing a KeyDown event
+                # Turn 'on' the visual button
+                if tto_globals.events[event]['keycode'] in \
+                        tto_globals.button_keyboard_codes:
+                    self.update_control_invert_button_colors(
+                        tto_globals.button_keyboard_codes[
+                            tto_globals.events[event]['keycode']][0],  # row
+                        tto_globals.button_keyboard_codes[
+                            tto_globals.events[event]['keycode']][1]  # col
+                    )
+                    self.needs_rendering = True
+
+            if tto_globals.events[event]['type'] == "KU":
+                # Seeing a KeyDown event
+                # Turn 'on' the visual button
+                if tto_globals.events[event]['keycode'] in \
+                        tto_globals.button_keyboard_codes:
+                    self.update_control_invert_button_colors(
+                        tto_globals.button_keyboard_codes[
+                            tto_globals.events[event]['keycode']][0],  # row
+                        tto_globals.button_keyboard_codes[
+                            tto_globals.events[event]['keycode']][1]  # col
+                    )
+                    self.needs_rendering = True
+
 
 class GUISurfaceTransportStrip(GUISurface):
     def __init__(self, canvas_width, canvas_height, blit_x, blit_y, **kwargs):
