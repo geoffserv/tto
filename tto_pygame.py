@@ -455,7 +455,8 @@ class GUISurfaceKeyboardMap(GUISurface):
                                 align="left")
 
     def update_control_invert_button_colors(self, row, col):
-        # Flip-flop foreground and background colors
+        # Flip-flop foreground and background colors for the button boxes
+        # for whenever a button is pushed / released
         if (tto_globals.keyboard_layout[row][col]['button_color_bg'] ==
            tto_globals.keyboard_layout[row][col]['button_color_bg_default']):
             tto_globals.keyboard_layout[row][col]['button_color_bg'] = \
@@ -497,8 +498,8 @@ class GUISurfaceKeyboardMap(GUISurface):
                     self.needs_rendering = True
 
             if tto_globals.events[event]['type'] == "KU":
-                # Seeing a KeyDown event
-                # Turn 'on' the visual button
+                # Seeing a KeyUp event
+                # Turn 'off' the visual button
                 if tto_globals.events[event]['keycode'] in \
                         tto_globals.button_keyboard_codes:
                     self.update_control_invert_button_colors(
