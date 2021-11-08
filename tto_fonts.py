@@ -21,9 +21,13 @@ font = {}  # Fonts used throughout the project stored here as a dict
 def init_fonts():
     # Don't call this until after pygame.init() in the master module.
     global font
+    #print(pygame.font.get_fonts())
+    #exit()
     try:
         tto_globals.debugger.message("FONT", "Loading SysFonts")
-        font = {'small_bold': pygame.font.SysFont('courier', 24, bold=True),
+        font = {'small': pygame.font.SysFont('courier', 24),
+                'small_bold': pygame.font.SysFont('courier', 24, bold=True),
+                'small_mono': pygame.font.SysFont('sfnsmono', 16),
                 'medium': pygame.font.SysFont('courier', 32),
                 'medium_bold': pygame.font.SysFont('courier', 32, bold=True),
                 'x_large': pygame.font.SysFont('courier', 80)}

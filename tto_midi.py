@@ -38,6 +38,11 @@ class TtoMidi(object):
         # the upstream DAW connected to my MIDI-in is in 'playing' state
         self.transport_playing = False
 
+        # A bit to track whether a new transport MIDI message has been seen.
+        # For ex, set to False, then check if it's True.  if so,
+        # a message has been seen by the midi module in the meantime.
+        self.transport_new_messages = False
+
         # The heart of the clock is clock_pulses.
         # Each time we receive a MIDI clock message, this increments
         # When this is equal to the ppb, one beat has elapsed
@@ -52,6 +57,8 @@ class TtoMidi(object):
         self.clock_pulse_timestamp = time.time()
         self.clock_pulse_delta = time.time()
         self.bpm_detected = 0
+
+
 
         # Check the program config options and attempt to open MIDI ports if
         # they are enabled.  We need an In for receiving upstream MIDI, and
@@ -179,12 +186,14 @@ class TtoMidi(object):
                                      "transport_playing TRUE: {}".format(
                                          midi_msg))
         self.transport_playing = True
+        self.transport_new_messages = True
 
     def transport_stop(self, midi_msg=None):
         tto_globals.debugger.message("MIDI",
                                      "transport_playing FALSE: {}".format(
                                          midi_msg))
         self.transport_playing = False
+        self.transport_new_messages = True
         self.clock_pulses = 0
 
     def handle_clock(self, midi_msg):
@@ -235,3 +244,4 @@ class TtoMidi(object):
 
             if (self.clock_pulses % int(self.ppb / 4)) == 1:
                 self.downbeat_quarter = True
+                self.transport_new_messages = True

@@ -97,13 +97,16 @@ class TtoPygame(object):
         # their surface attribute will be blit to the canvas.
         self.gui_surfaces = []
 
+        self.init_gui_surfaces()
+
     def handle_pygame(self):
         """Non-blocking method to handle all pygame internals at a safe
         framerate.  Call this from the program main run loop.
         """
         if (time.time() - self.fps_tick) > self.fps_sec_per_frame:
-            self.handle_input()
             self.handle_graphics()
+            self.handle_input()
+            self.handle_updates()
             self.fps_tick = time.time()
 
     def handle_graphics(self):
@@ -115,20 +118,30 @@ class TtoPygame(object):
                     needs_rendering = True
 
             if needs_rendering:
-                # First, flood the screen:
-                self.canvas.fill(tto_globals.color_black)
+                try:
+                    # First, flood the screen:
+                    self.canvas.fill(tto_globals.color_black)
 
-                # Loop through each gui_surface added to the gui_surfaces
-                for gui_surface in self.gui_surfaces:
-                    # The drawControl method should update the control's visual
-                    # elements and
-                    # draw to the control's surface
-                    gui_surface.draw_control()
-                    # Blit the control's surface to the canvas
-                    self.canvas.blit(gui_surface.surface,
-                                     [gui_surface.blit_x,
-                                      gui_surface.blit_y])
-                pygame.display.update()
+                    # Loop through each gui_surface added to the gui_surfaces
+                    for gui_surface in self.gui_surfaces:
+                        # The drawControl method should update the control's
+                        # visual elements and
+                        # draw to the control's surface
+                        gui_surface.draw_control()
+                        # Blit the control's surface to the canvas
+                        self.canvas.blit(gui_surface.surface,
+                                         [gui_surface.blit_x,
+                                          gui_surface.blit_y])
+                    pygame.display.update()
+                except Exception as e:
+                    tto_globals.debugger.message("EXCEPTION",
+                                                 "Error drawing pygame: {}".
+                                                 format(e))
+
+    def handle_updates(self):
+        if self.canvas:
+            for gui_surface in self.gui_surfaces:
+                gui_surface.update_control()
 
     def handle_input(self):
         if self.canvas:
@@ -152,20 +165,39 @@ class TtoPygame(object):
                 self.handle_input_key(event)
 
     def handle_input_key(self, event):
+        """Filter out KEY-based input signals and action as necessary
+        """
         # Only examine KEYDOWNs and KEYUPs:
         if event.type in (pygame.KEYDOWN, pygame.KEYUP):
             tto_globals.debugger.message("PYGA",
                                          "Detected pygame.event: {}".
                                          format(event))
 
+    def init_gui_surfaces(self):
+        """Set-up all GUI elements here, and append() each to gui_surfaces
+        As part of the framerate-gated handle_graphics() execution, everything
+        in gui_surfaces is iterated across and draw_control() /
+        update_control() are called
+        """
+        gui_terminal = GUISurfaceTerminal(canvas_width=950,
+                                          canvas_height=260,
+                                          blit_x=960,
+                                          blit_y=810)
+        self.gui_surfaces.append(gui_terminal)
+
+        gui_tstrip = GUISurfaceTransportStrip(canvas_width=950,
+                                              canvas_height=50,
+                                              blit_x=960,
+                                              blit_y=740)
+        self.gui_surfaces.append(gui_tstrip)
+
 
 class GUISurface(object):
-    def __init__(self, **kwargs):
+    def __init__(self, canvas_width, canvas_height, blit_x, blit_y, **kwargs):
         # Informal interface for a GUISurface
 
-        # 100px x 100px canvas ratio default
-        self.canvas_width = kwargs.get('canvas_size', 100)
-        self.canvas_height = kwargs.get('canvas_size', 100)
+        self.canvas_width = canvas_width
+        self.canvas_height = canvas_height
 
         self.color = kwargs.get('color', tto_globals.color_orange)
         self.color_bg = kwargs.get('color_bg', tto_globals.color_black)
@@ -174,17 +206,18 @@ class GUISurface(object):
 
         # The X location in which this entire control
         # should be blit to the screen canvas
-        self.blit_x = kwargs.get('blit_x', tto_globals.canvas_margin)
+        self.blit_x = blit_x
 
         # The Y location in which this entire control
         # should be blit to the screen canvas
-        self.blit_y = kwargs.get('blit_y', tto_globals.canvas_margin)
+        self.blit_y = blit_y
 
         self.surface = None
         self.surface = pygame.Surface(
             (int(self.canvas_width + (tto_globals.canvas_margin * 2)),
              int(self.canvas_height + (tto_globals.canvas_margin * 2))))
 
+        # self.needs_rendering:
         # If this is true for this GUI surface object, the screen will be
         # re-rendered on the next main loop run.
         # This will be set to False at the beginning of every execution of the
@@ -224,17 +257,191 @@ class GUISurface(object):
             coord_pair += 1
 
     def draw_label(self, coordinates, degrees, text_label, font,
-                   color):
+                   color, align="center"):
         text = font.render(text_label, False, color)
         text = pygame.transform.rotate(text, degrees)
-        text_x_center = int(text.get_width() / 2)
-        text_y_center = int(text.get_height() / 2)
+
+        text_x = 0
+        text_y = 0
+
+        if align == "center":
+            text_x = int(text.get_width() / 2)
+            text_y = int(text.get_height() / 2)
+
         # Bit on to the surface:
-        self.surface.blit(text, [coordinates[0] - text_x_center,
-                                 coordinates[1] - text_y_center])
+        self.surface.blit(text, [coordinates[0] - text_x,
+                                 coordinates[1] - text_y])
+
+    def draw_control_border(self):
+        """ Draw a control border
+        # Rect(left, top, width, height)
+        """
+        rect_border = pygame.Rect(0, 0, self.canvas_width, self.canvas_height)
+        pygame.draw.rect(self.surface, tto_globals.color_orange_50,
+                         rect_border, 2)
 
     def draw_control(self):
-        pass
+        """ Draw the actual GUI elements on self.surface
+        Minimally, self.draw_control_border() for a uniform program-wide
+        GUI surface border between various elements.
+        """
+        self.surface.fill(self.color_bg)
+        self.draw_control_border()
 
-    def update_control(self, events):
+    def update_control(self, events=tto_globals.events):
+        """ Determines whether needs_rendering = True
+        and can perform any necessary task for the GUI surface with access to
+        the tto_globals.events dict
+        Override as necessary.
+        """
         self.needs_rendering = False
+
+
+class GUISurfaceTransportStrip(GUISurface):
+    def __init__(self, canvas_width, canvas_height, blit_x, blit_y, **kwargs):
+        # Run superclass __init__ to inherit all of those instance attributes
+        super(self.__class__, self).__init__(canvas_width, canvas_height,
+                                             blit_x, blit_y, **kwargs)
+
+        self.log_line_font = tto_fonts.font['small_mono']
+
+        self.downbeat_whole_indicator = False
+        self.downbeat_half_indicator = False
+        self.downbeat_quarter_indicator = False
+
+    def draw_control(self):
+        """ Overriding GUISurface.draw_control()
+        """
+        self.surface.fill(self.color_bg)
+        self.draw_control_border()
+
+        # Clock Playing Box #
+        play_message_string = "clock stopped"
+        bpm = 0
+        color = tto_globals.color_orange_50
+        border = 1
+
+        if tto_globals.midi and tto_globals.midi.transport_playing:
+            play_message_string = "clock playing"
+            bpm = round(tto_globals.midi.bpm_detected)
+            color = tto_globals.color_orange
+            border = 2
+        rect_border = pygame.Rect(10, 10, 154, 30)
+        pygame.draw.rect(self.surface, color,
+                         rect_border, border)
+        self.draw_label(coordinates=(87, 23),
+                        degrees=0,
+                        text_label=play_message_string,
+                        font=self.log_line_font,
+                        color=color,
+                        align="center")
+
+        # BPM Box #
+        bpm_message_string = "{} BPM".format(bpm)
+        rect_border = pygame.Rect(174, 10, 110, 30)
+        pygame.draw.rect(self.surface, color,
+                         rect_border, border)
+        self.draw_label(coordinates=(227, 23),
+                        degrees=0,
+                        text_label=bpm_message_string,
+                        font=self.log_line_font,
+                        color=color,
+                        align="center")
+
+        # Beat Monitor #
+        beatmon_message_string = "MIDI Clock"
+        rect_border = pygame.Rect(294, 10, 214, 30)
+        pygame.draw.rect(self.surface, color,
+                         rect_border, border)
+        self.draw_label(coordinates=(307, 15),
+                        degrees=0,
+                        text_label=beatmon_message_string,
+                        font=self.log_line_font,
+                        color=color,
+                        align="left")
+
+        # Beat Monitor "LED" squares that blink #
+        border = self.downbeat_whole_indicator * 1  # 1 if true, 0 if false
+
+        rect_border = pygame.Rect(420, 10, 30, 30)
+        pygame.draw.rect(self.surface, color,
+                         rect_border, border)
+
+        border = self.downbeat_half_indicator * 1  # 1 if true, 0 if false
+
+        rect_border = pygame.Rect(449, 10, 30, 30)
+        pygame.draw.rect(self.surface, color,
+                         rect_border, border)
+
+        border = self.downbeat_quarter_indicator * 1  # 1 if true, 0 if false
+
+        rect_border = pygame.Rect(478, 10, 30, 30)
+        pygame.draw.rect(self.surface, color,
+                         rect_border, border)
+
+    def update_control(self):
+        """ Overriding GUISurface.update_control()
+        """
+        self.needs_rendering = False
+        if tto_globals.midi and tto_globals.midi.transport_new_messages:
+            self.needs_rendering = True
+            tto_globals.midi.transport_new_messages = False
+
+            if tto_globals.midi.downbeat_whole:
+                self.downbeat_whole_indicator = not \
+                    self.downbeat_whole_indicator
+
+            if tto_globals.midi.downbeat_half:
+                self.downbeat_half_indicator = not \
+                    self.downbeat_half_indicator
+
+            if tto_globals.midi.downbeat_quarter:
+                self.downbeat_quarter_indicator = not \
+                    self.downbeat_quarter_indicator
+
+class GUISurfaceTerminal(GUISurface):
+    def __init__(self, canvas_width, canvas_height, blit_x, blit_y, **kwargs):
+        # Run superclass __init__ to inherit all of those instance attributes
+        super(self.__class__, self).__init__(canvas_width, canvas_height,
+                                             blit_x, blit_y, **kwargs)
+
+        # 10 lines of logging shown by default
+        self.log_lines = kwargs.get('log_lines', 10)
+        self.log_line_font = tto_fonts.font['small_mono']
+
+        # self.time_format for how to display timestamps on-screen
+        # https://docs.python.org/3/library/time.html#time.strftime
+        self.time_format = "%Y-%m-%d %H:%M:%S %z"
+
+    def draw_control(self):
+        """ Overriding GUISurface.draw_control()
+        """
+        self.surface.fill(self.color_bg)
+        self.draw_control_border()
+
+        log_lines = tto_globals.debugger.messages[-self.log_lines:]
+
+        line_spacing = int(self.canvas_height / self.log_lines)
+        for i in range(self.log_lines):
+
+            message_string = "{} {}- {}".\
+                format(time.strftime(self.time_format,
+                                     time.localtime(log_lines[i]
+                                                    ['timestamp'])),
+                                     log_lines[i]['severity'],
+                                     log_lines[i]['message'])
+
+            self.draw_label(coordinates=(7, (i * line_spacing) + 5),
+                            degrees=0,
+                            text_label=message_string,
+                            font=self.log_line_font,
+                            color=tto_globals.color_orange,
+                            align="left")
+
+    def update_control(self):
+        """ Overriding GUISurface.update_control()
+        """
+        self.needs_rendering = False
+        if tto_globals.debugger.new_messages:
+            self.needs_rendering = True
+            tto_globals.debugger.new_messages = False

@@ -37,9 +37,15 @@ class TtoDebugger(object):
 
         self.message("DEBG", "Started debugger")
 
+        # Some attributes to calculate and track loop run speed
         self.runtime_ticks = 0
         self.runtime_tick_time = time.time()
         self.runtime_mhz = 0
+
+        # A bit to track whether a new log message has been seen.
+        # For ex, set to False, then check if it's True.  if so,
+        # a message has been seen by the debugger in the meantime.
+        self.new_messages = False
 
     def perf_monitor(self):
         # Non-blocking method run once per main-loop execution cycle
@@ -76,6 +82,7 @@ class TtoDebugger(object):
 
     def message(self, severity, message):
         timestamp = time.time()
+        self.new_messages = True
         self.messages.append({"severity": severity,
                               "message": message,
                               "timestamp": timestamp})
