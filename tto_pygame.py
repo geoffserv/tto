@@ -50,7 +50,7 @@ class TtoPygame(object):
 
         self.canvas = None  # Gfx display will be attached here
 
-        self.fps = 120  # Poll/Render no faster than this many fps
+        self.fps = 120  # Poll/Render pygame no faster than this many fps
         self.fps_sec_per_frame = (1 / self.fps)
         self.fps_tick = time.time()  # Tracking time for fps here
 
@@ -137,6 +137,7 @@ class TtoPygame(object):
                     tto_globals.debugger.message("EXCEPTION",
                                                  "Error drawing pygame: {}".
                                                  format(e))
+                    tto_globals.debugger.exit("Pygame render error.")
 
     def handle_updates(self):
         if self.canvas:
@@ -179,17 +180,27 @@ class TtoPygame(object):
         in gui_surfaces is iterated across and draw_control() /
         update_control() are called
         """
+
+        # A Terminal that shows live updates to tto_globals.debugger.messages
         gui_terminal = GUISurfaceTerminal(canvas_width=950,
                                           canvas_height=260,
                                           blit_x=960,
                                           blit_y=810)
         self.gui_surfaces.append(gui_terminal)
 
+        # The transport strip showing MIDI clock info, play/stop, quant info
         gui_tstrip = GUISurfaceTransportStrip(canvas_width=950,
                                               canvas_height=50,
                                               blit_x=960,
                                               blit_y=740)
         self.gui_surfaces.append(gui_tstrip)
+
+        # A keyboard map showing all keys, mappings, button status, actions
+        gui_keyboard_map = GUISurfaceKeyboardMap(canvas_width=950,
+                                                 canvas_height=290,
+                                                 blit_x=960,
+                                                 blit_y=430)
+        self.gui_surfaces.append(gui_keyboard_map)
 
 
 class GUISurface(object):
@@ -203,6 +214,9 @@ class GUISurface(object):
         self.color_bg = kwargs.get('color_bg', tto_globals.color_black)
         self.color_accent = kwargs.get('color_accent',
                                        tto_globals.color_orange_25)
+
+        # This is a nice little default font
+        self.font = tto_fonts.font['small_mono']
 
         # The X location in which this entire control
         # should be blit to the screen canvas
@@ -288,7 +302,7 @@ class GUISurface(object):
         self.surface.fill(self.color_bg)
         self.draw_control_border()
 
-    def update_control(self, events=tto_globals.events):
+    def update_control(self):
         """ Determines whether needs_rendering = True
         and can perform any necessary task for the GUI surface with access to
         the tto_globals.events dict
@@ -297,13 +311,123 @@ class GUISurface(object):
         self.needs_rendering = False
 
 
-class GUISurfaceTransportStrip(GUISurface):
+class GUISurfaceKeyboardMap(GUISurface):
     def __init__(self, canvas_width, canvas_height, blit_x, blit_y, **kwargs):
         # Run superclass __init__ to inherit all of those instance attributes
         super(self.__class__, self).__init__(canvas_width, canvas_height,
                                              blit_x, blit_y, **kwargs)
 
-        self.log_line_font = tto_fonts.font['small_mono']
+        self.cols = 12
+        self.rows = 4
+
+        self.color = tto_globals.color_orange_50
+
+    def draw_control(self):
+        """ Overriding GUISurface.draw_control()
+        """
+        self.surface.fill(self.color_bg)
+        self.draw_control_border()
+
+        # Draw the keyboard row labels
+        self.draw_label(coordinates=(8, 7),
+                        degrees=0,
+                        text_label="Key sig",
+                        font=self.font,
+                        color=self.color,
+                        align="left")
+        self.draw_label(coordinates=(8, 27),
+                        degrees=0,
+                        text_label="Tone class",
+                        font=self.font,
+                        color=self.color,
+                        align="left")
+        self.draw_label(coordinates=(8, 47),
+                        degrees=0,
+                        text_label="Tonal root",
+                        font=self.font,
+                        color=self.color,
+                        align="left")
+
+        self.draw_label(coordinates=(8, 27 + 71 - 10),
+                        degrees=0,
+                        text_label="Scale",
+                        font=self.font,
+                        color=self.color,
+                        align="left")
+        self.draw_label(coordinates=(8, 27 + 71 + 10),
+                        degrees=0,
+                        text_label="degree",
+                        font=self.font,
+                        color=self.color,
+                        align="left")
+
+        self.draw_label(coordinates=(8, 27 + (71 * 2) - 10),
+                        degrees=0,
+                        text_label="Chord",
+                        font=self.font,
+                        color=self.color,
+                        align="left")
+        self.draw_label(coordinates=(8, 27 + (71 * 2) + 10),
+                        degrees=0,
+                        text_label="interval",
+                        font=self.font,
+                        color=self.color,
+                        align="left")
+
+        self.draw_label(coordinates=(8, 27 + (71 * 3) - 10),
+                        degrees=0,
+                        text_label="Control",
+                        font=self.font,
+                        color=self.color,
+                        align="left")
+        self.draw_label(coordinates=(8, 27 + (71 * 3) + 10),
+                        degrees=0,
+                        text_label="buttons",
+                        font=self.font,
+                        color=self.color,
+                        align="left")
+
+        # Draw the keyboard
+        for row in range(self.rows):
+            for col in range(self.cols):
+                rect_key = pygame.Rect(110 + (col * 70),
+                                       10 + (row * 70),
+                                       60,
+                                       60)
+                pygame.draw.rect(self.surface,
+                                 self.color,
+                                 rect_key,
+                                 1)
+                # Per-button label 1
+                self.draw_label(coordinates=(110 + (col * 70) + 4,
+                                             10 + (row * 70) ),
+                                degrees=0,
+                                text_label="{},{}".format(row, col),
+                                font=self.font,
+                                color=self.color,
+                                align="left")
+                # Per-button label 2
+                self.draw_label(coordinates=(110 + (col * 70) + 4,
+                                             10 + (row * 70)  + 20),
+                                degrees=0,
+                                text_label="12345",
+                                font=self.font,
+                                color=self.color,
+                                align="left")
+                # Per-button label 3
+                self.draw_label(coordinates=(110 + (col * 70) + 4,
+                                             10 + (row * 70) + 40),
+                                degrees=0,
+                                text_label="12345",
+                                font=self.font,
+                                color=self.color,
+                                align="left")
+
+class GUISurfaceTransportStrip(GUISurface):
+    def __init__(self, canvas_width, canvas_height, blit_x, blit_y, **kwargs):
+        # Run superclass __init__ to inherit all of those instance attributes
+        super(self.__class__, self).__init__(canvas_width, canvas_height,
+                                             blit_x, blit_y, **kwargs)
 
         self.downbeat_whole_indicator = False
         self.downbeat_half_indicator = False
@@ -332,7 +456,7 @@ class GUISurfaceTransportStrip(GUISurface):
         self.draw_label(coordinates=(87, 23),
                         degrees=0,
                         text_label=play_message_string,
-                        font=self.log_line_font,
+                        font=self.font,
                         color=color,
                         align="center")
 
@@ -341,10 +465,10 @@ class GUISurfaceTransportStrip(GUISurface):
         rect_border = pygame.Rect(174, 10, 110, 30)
         pygame.draw.rect(self.surface, color,
                          rect_border, border)
-        self.draw_label(coordinates=(227, 23),
+        self.draw_label(coordinates=(227, 24),
                         degrees=0,
                         text_label=bpm_message_string,
-                        font=self.log_line_font,
+                        font=self.font,
                         color=color,
                         align="center")
 
@@ -356,24 +480,28 @@ class GUISurfaceTransportStrip(GUISurface):
         self.draw_label(coordinates=(307, 15),
                         degrees=0,
                         text_label=beatmon_message_string,
-                        font=self.log_line_font,
+                        font=self.font,
                         color=color,
                         align="left")
 
         # Beat Monitor "LED" squares that blink #
-        border = self.downbeat_whole_indicator * 1  # 1 if true, 0 if false
+        # if self.downbeat_whole_indicator is False, border will be int 1
+        #    otherwise border will be int 0.
+        #    This way, if the indicator is true, border is 0 and the box
+        #    is filled in.  Otherwise border is 1 and the box is outlined.
+        border = (not self.downbeat_whole_indicator) * 1
 
         rect_border = pygame.Rect(420, 10, 30, 30)
         pygame.draw.rect(self.surface, color,
                          rect_border, border)
 
-        border = self.downbeat_half_indicator * 1  # 1 if true, 0 if false
+        border = (not self.downbeat_half_indicator) * 1
 
         rect_border = pygame.Rect(449, 10, 30, 30)
         pygame.draw.rect(self.surface, color,
                          rect_border, border)
 
-        border = self.downbeat_quarter_indicator * 1  # 1 if true, 0 if false
+        border = (not self.downbeat_quarter_indicator) * 1
 
         rect_border = pygame.Rect(478, 10, 30, 30)
         pygame.draw.rect(self.surface, color,
@@ -399,6 +527,7 @@ class GUISurfaceTransportStrip(GUISurface):
                 self.downbeat_quarter_indicator = not \
                     self.downbeat_quarter_indicator
 
+
 class GUISurfaceTerminal(GUISurface):
     def __init__(self, canvas_width, canvas_height, blit_x, blit_y, **kwargs):
         # Run superclass __init__ to inherit all of those instance attributes
@@ -407,11 +536,13 @@ class GUISurfaceTerminal(GUISurface):
 
         # 10 lines of logging shown by default
         self.log_lines = kwargs.get('log_lines', 10)
-        self.log_line_font = tto_fonts.font['small_mono']
 
         # self.time_format for how to display timestamps on-screen
         # https://docs.python.org/3/library/time.html#time.strftime
         self.time_format = "%Y-%m-%d %H:%M:%S %z"
+
+        # To prevent text screen runoff:
+        self.log_lines_max_len = 94  # Truncate messages longer than this
 
     def draw_control(self):
         """ Overriding GUISurface.draw_control()
@@ -431,10 +562,14 @@ class GUISurfaceTerminal(GUISurface):
                                      log_lines[i]['severity'],
                                      log_lines[i]['message'])
 
+            if len(message_string) > self.log_lines_max_len:
+                message_string = "{} ...".format(
+                    message_string[:(self.log_lines_max_len - 4)])
+
             self.draw_label(coordinates=(7, (i * line_spacing) + 5),
                             degrees=0,
                             text_label=message_string,
-                            font=self.log_line_font,
+                            font=self.font,
                             color=tto_globals.color_orange,
                             align="left")
 

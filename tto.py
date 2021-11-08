@@ -81,7 +81,7 @@ def tto_run():
         # Receive and send MIDI
         tto_globals.midi.handle_messages()
 
-        # Clear the events dict.  All events have been handled.
+        # Clear the events dict.  All events should have been handled.
         tto_globals.events = {}
 
         #####################
