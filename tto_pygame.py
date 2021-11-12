@@ -265,27 +265,6 @@ class GUISurface(object):
     def draw_polygon(self, shape, width, color):
         pygame.draw.polygon(self.surface, color, shape.coordinates, width)
 
-    def draw_key_labels(self, shape, labels):
-        coord_pair = 0
-        for coordinates in shape.coordinates:
-            if (coord_pair >= tto_globals.key.current_key) and \
-               (coord_pair <= (tto_globals.key.current_key + 5)) and \
-                    (tto_globals.key.current_key in range(7)):
-                # sharps
-                note_label = labels[coord_pair]['sharpName']
-            else:
-                note_label = labels[coord_pair]['noteName']
-            if tto_globals.key.current_key == coord_pair:
-                font = tto_fonts.font['medium_bold']
-            else:
-                font = tto_fonts.font['medium']
-            self.draw_label(coordinates,
-                            shape.degrees[coord_pair],
-                            note_label,
-                            font,
-                            self.color)
-            coord_pair += 1
-
     def draw_label(self, coordinates, degrees, text_label, font,
                    color, align="center"):
         text = font.render(text_label, False, color)
@@ -370,6 +349,27 @@ class GUISurfaceHelm(GUISurface):
         # But if want a _side_ to be oriented upwards, not a _point_
         # then back it up an additional 1/24th of a circle
         self.offset_degrees = int(-360 / 24)
+
+    def draw_key_labels(self, shape, labels):
+        coord_pair = 0
+        for coordinates in shape.coordinates:
+            if (coord_pair >= tto_globals.key.current_key) and \
+               (coord_pair <= (tto_globals.key.current_key + 5)) and \
+                    (tto_globals.key.current_key in range(7)):
+                # sharps
+                note_label = labels[coord_pair]['sharpName']
+            else:
+                note_label = labels[coord_pair]['noteName']
+            if tto_globals.key.current_key == coord_pair:
+                font = tto_fonts.font['medium_bold']
+            else:
+                font = tto_fonts.font['medium']
+            self.draw_label(coordinates,
+                            shape.degrees[coord_pair],
+                            note_label,
+                            font,
+                            self.color)
+            coord_pair += 1
 
     def rotate_wheel(self, direction):
         # Set direction to 1 for clockwise rotation
@@ -468,24 +468,25 @@ class GUISurfaceHelm(GUISurface):
         # Handle the dict of events passed in for this update
         for event in tto_globals.events:
 
-            if 'trigger_note' in tto_globals.events[event] and \
-                    tto_globals.events[event]['trigger_note']:
-                notes_effected = tto_globals.key.calculate_chord(
-                    tto_globals.chord_definitions[tto_globals.events[event]['chord']])
-                if 'start' in tto_globals.events[event] and tto_globals.events[event]['start']:
-                    self.needs_rendering = True
-                    tto_globals.midi.notes_trigger(mode="on",
-                                                    notes=notes_effected)
-                    tto_globals.midi.notes_prior = notes_effected
-                if 'stop' in tto_globals.events[event] and tto_globals.events[event]['stop']:
-                    self.needs_rendering = True
-                    # Turn off the currently selected notes, plus the prior
-                    # fired notes:
-                    notes_effected.extend(tto_globals.midi.notes_prior)
-                    tto_globals.midi.notes_trigger(mode="off",
-                                                    notes=notes_effected)
+            # if 'trigger_note' in tto_globals.events[event] and \
+            #         tto_globals.events[event]['trigger_note']:
+            #     notes_effected = tto_globals.key.calculate_chord(
+            #         tto_globals.chord_definitions[tto_globals.events[event]['chord']])
+            #     if 'start' in tto_globals.events[event] and tto_globals.events[event]['start']:
+            #         self.needs_rendering = True
+            #         tto_globals.midi.notes_trigger(mode="on",
+            #                                         notes=notes_effected)
+            #         tto_globals.midi.notes_prior = notes_effected
+            #     if 'stop' in tto_globals.events[event] and tto_globals.events[event]['stop']:
+            #         self.needs_rendering = True
+            #         # Turn off the currently selected notes, plus the prior
+            #         # fired notes:
+            #         notes_effected.extend(tto_globals.midi.notes_prior)
+            #         tto_globals.midi.notes_trigger(mode="off",
+            #                                         notes=notes_effected)
 
-            if 'rotate' in tto_globals.events[event] and tto_globals.events[event]['rotate']:
+            if 'rotate' in tto_globals.events[event] and \
+                    tto_globals.events[event]['rotate']:
                 if tto_globals.events[event]['wheel'] == "key":
                     if tto_globals.events[event]['dir'] == "cw":
                         self.rotate_wheel(1)
