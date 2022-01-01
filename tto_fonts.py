@@ -25,7 +25,8 @@ def init_fonts():
     #exit()
     try:
         tto_globals.debugger.message("FONT", "Loading SysFonts")
-        font = {'small': pygame.font.SysFont('sfnsmono', 16),
+        font = {'x_small': pygame.font.SysFont('sfnsmono', 12),
+                'small': pygame.font.SysFont('sfnsmono', 16),
                 'small_bold': pygame.font.SysFont('sfnsmono', 16, bold=True),
                 'small_mono': pygame.font.SysFont('sfnsmono', 16),
                 'medium': pygame.font.SysFont('sfnsmono', 24),
