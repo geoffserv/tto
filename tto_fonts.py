@@ -28,9 +28,10 @@ def init_fonts():
         font = {'x_small': pygame.font.SysFont('sfnsmono', 12),
                 'small': pygame.font.SysFont('sfnsmono', 16),
                 'small_bold': pygame.font.SysFont('sfnsmono', 16, bold=True),
-                'small_mono': pygame.font.SysFont('sfnsmono', 16),
                 'medium': pygame.font.SysFont('sfnsmono', 24),
                 'medium_bold': pygame.font.SysFont('sfnsmono', 24, bold=True),
+                'large': pygame.font.SysFont('sfnsmono', 40),
+                'large_bold': pygame.font.SysFont('sfnsmono', 40, bold=True),
                 'x_large': pygame.font.SysFont('sfnsmono', 60)}
     except Exception as e:
         tto_globals.debugger.message("EXCEPTION",

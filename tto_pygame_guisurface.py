@@ -16,7 +16,7 @@ class GUISurface(object):
                                        tto_globals.color_orange_25)
 
         # This is a nice little default font
-        self.font = tto_fonts.font['small_mono']
+        self.font = tto_fonts.font['small']
 
         # The X location in which this entire control
         # should be blit to the screen canvas

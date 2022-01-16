@@ -143,8 +143,10 @@ class GUISurfaceHelm(GUISurface):
         ###################
         # Diatonic labels #
         ###################
+
+        # Scale Degree word label
         polygon = ShapeWheelRay(canvas_size=self.r * 2,
-                                r=self.r - 115,
+                                r=self.r - 100,
                                 slice_no=0,
                                 offset_degrees=self.rotate_offset_chord)
         self.draw_label(polygon.coordinates[1],
@@ -153,9 +155,11 @@ class GUISurfaceHelm(GUISurface):
                         tto_fonts.font['small_bold'],
                         self.color_bg)
 
+        # Scale Degree number & labels all the way around the wheel
         for label in tto_globals.note_wheel_labels:
+            # The actual digit label
             polygon = ShapeWheelRay(canvas_size=self.r * 2,
-                                    r=self.r - 155,
+                                    r=self.r - 130,
                                     slice_no=label)
             self.draw_label(polygon.coordinates[1],
                             polygon.degrees[0],
@@ -163,8 +167,10 @@ class GUISurfaceHelm(GUISurface):
                                 ["step"]),
                             tto_fonts.font['medium_bold'],
                             self.color_bg)
+
+            # The triad e.g. MAJ, min, dim
             polygon = ShapeWheelRay(canvas_size=self.r * 2,
-                                    r=self.r - 195,
+                                    r=self.r - 160,
                                     slice_no=label)
             self.draw_label(polygon.coordinates[1],
                             polygon.degrees[0],
@@ -172,8 +178,10 @@ class GUISurfaceHelm(GUISurface):
                                 ["triad"]),
                             tto_fonts.font['small_bold'],
                             self.color_bg)
+
+            # The scale degree mode e.g. Ionian, Mixolydian, etc
             polygon = ShapeWheelRay(canvas_size=self.r * 2,
-                                    r=self.r - 217,
+                                    r=self.r - 180,
                                     slice_no=label)
             self.draw_label(polygon.coordinates[1],
                             polygon.degrees[0],
@@ -182,15 +190,48 @@ class GUISurfaceHelm(GUISurface):
                             tto_fonts.font['x_small'],
                             self.color_bg)
 
-        ####################################
-        # Draw the selected note indicator #
-        ####################################
+        #########################################
+        # Selected scale degree chord intervals #
+        #########################################
+
+        # The up arrow ↑
         polygon = ShapeWheelRay(canvas_size=self.r * 2,
-                                r=self.r - 256,
+                                r=self.r - 213,
                                 slice_no=0,
                                 offset_degrees=self.rotate_offset_chord)
         self.draw_label(polygon.coordinates[1],
                         polygon.degrees[0],
                         "↑",
-                        tto_fonts.font['x_large'],
-                        self.color)
+                        tto_fonts.font['large_bold'],
+                        self.color_bg)
+
+        # The chord interval words
+        polygon = ShapeWheelRay(canvas_size=self.r * 2,
+                                r=self.r - 247,
+                                slice_no=0)
+        self.draw_label(polygon.coordinates[1],
+                        polygon.degrees[0],
+                        "Chord",
+                        tto_fonts.font['x_small'],
+                        self.color_bg)
+        polygon = ShapeWheelRay(canvas_size=self.r * 2,
+                                r=self.r - 263,
+                                slice_no=0)
+        self.draw_label(polygon.coordinates[1],
+                        polygon.degrees[0],
+                        "interval",
+                        tto_fonts.font['x_small'],
+                        self.color_bg)
+
+        # Chord interval number all the way around the wheel
+        for label in tto_globals.note_wheel_labels:
+            # The actual digit label
+            polygon = ShapeWheelRay(canvas_size=self.r * 2,
+                                    r=self.r - 295,
+                                    slice_no=label)
+            self.draw_label(polygon.coordinates[1],
+                            polygon.degrees[0],
+                            str(tto_globals.note_wheel_labels[label]
+                                ["step"]),
+                            tto_fonts.font['medium_bold'],
+                            self.color_bg)
