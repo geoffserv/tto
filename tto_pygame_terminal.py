@@ -34,8 +34,8 @@ class GUISurfaceTerminal(GUISurface):
                 format(time.strftime(self.time_format,
                                      time.localtime(log_lines[i]
                                                     ['timestamp'])),
-                                     log_lines[i]['severity'],
-                                     log_lines[i]['message'])
+                       log_lines[i]['severity'],
+                       log_lines[i]['message'])
 
             if len(message_string) > self.log_lines_max_len:
                 message_string = "{} ...".format(
