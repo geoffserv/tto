@@ -209,6 +209,7 @@ class TtoPygame(object):
         self.gui_surfaces.append(gui_tstrip)
 
         # A keyboard map showing all keys, mappings, button status, actions
+        # This module maps keyboard input to actions downstream
         gui_keyboard_map = GUISurfaceKeyboardMap(canvas_width=950,
                                                  canvas_height=290,
                                                  blit_x=960,

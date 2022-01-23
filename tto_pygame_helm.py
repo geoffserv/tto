@@ -63,6 +63,17 @@ class GUISurfaceHelm(GUISurface):
 
         self.draw_control_border()
 
+        self.rotate_offset = int(tto_globals.key.current_key * (-360/12))
+
+        # For the Chord Interval labels, rollover from position 6 to 11
+        # because all the non-Diatonics live in positions 6-10
+        adjusted_scale_degree = tto_globals.key.current_scale_degree
+        if adjusted_scale_degree == 6:
+            adjusted_scale_degree = 11
+
+        self.rotate_offset_chord = int(adjusted_scale_degree *
+                                       (360/12))
+
         #############
         # Key label #
         #############
@@ -161,6 +172,7 @@ class GUISurfaceHelm(GUISurface):
             polygon = ShapeWheelRay(canvas_size=self.r * 2,
                                     r=self.r - 130,
                                     slice_no=label)
+
             self.draw_label(polygon.coordinates[1],
                             polygon.degrees[0],
                             str(tto_globals.note_wheel_labels[label]
@@ -208,7 +220,8 @@ class GUISurfaceHelm(GUISurface):
         # The chord interval words
         polygon = ShapeWheelRay(canvas_size=self.r * 2,
                                 r=self.r - 247,
-                                slice_no=0)
+                                slice_no=0,
+                                offset_degrees=self.rotate_offset_chord)
         self.draw_label(polygon.coordinates[1],
                         polygon.degrees[0],
                         "Chord",
@@ -216,12 +229,22 @@ class GUISurfaceHelm(GUISurface):
                         self.color_bg)
         polygon = ShapeWheelRay(canvas_size=self.r * 2,
                                 r=self.r - 263,
-                                slice_no=0)
+                                slice_no=0,
+                                offset_degrees=self.rotate_offset_chord)
         self.draw_label(polygon.coordinates[1],
                         polygon.degrees[0],
                         "interval",
                         tto_fonts.font['x_small'],
                         self.color_bg)
+
+        # The 'slices' of tto_globals.note_wheel_labels in the default order
+        scale_degree_order = [11, 0, 1, 2, 3, 4, 5]
+
+        # Now Cut The Deck depending on tto_globals.key.current_scale_degree
+        if tto_globals.key.current_scale_degree > 0:
+            scale_degree_order = \
+                scale_degree_order[7-tto_globals.key.current_scale_degree:] + \
+                scale_degree_order[0:7-tto_globals.key.current_scale_degree]
 
         # Chord interval number all the way around the wheel
         for label in tto_globals.note_wheel_labels:
@@ -231,7 +254,9 @@ class GUISurfaceHelm(GUISurface):
                                     slice_no=label)
             self.draw_label(polygon.coordinates[1],
                             polygon.degrees[0],
-                            str(tto_globals.note_wheel_labels[label]
+                            str(tto_globals.note_wheel_labels[
+                                    scale_degree_order.pop(0)
+                                ]
                                 ["step"]),
                             tto_fonts.font['medium_bold'],
                             self.color_bg)

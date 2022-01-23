@@ -126,9 +126,12 @@ note_wheel_labels = {11: {"step": 4,
 
 class Key(object):
     def __init__(self):
-        self.current_key = 0
-        self.current_chord_root = 0
-        self.current_key_mode = 0
+        # current_key is 0-11
+        self.current_key = 11
+
+        # current_scale_degree is 0-6
+        self.current_scale_degree = 2
+
         self.notes_on = []  # List containing key.notes indices currently
         # playing 0-11
 
@@ -188,6 +191,8 @@ class Key(object):
             chord.append(self.chord_scale[chord_slices_dict[note]])
         return chord
 
+# key is the global instance of Key
+key = Key()
 
 # For now, how intervals are defined:
 # The 'slice number' around the circle of fifths
@@ -205,9 +210,6 @@ chord_slices_dict = {1: 0,
                      5: 1,
                      6: 3,
                      7: 5}
-
-
-key = Key()
 
 running = False  # Main loop running boolean.  Set to false and program ends.
 
