@@ -171,20 +171,21 @@ class TtoPygame(object):
     def handle_input_key(self, event):
         """Filter out KEY-based input signals and add to tto_globals.events
         """
-        if event.type in (pygame.KEYUP, pygame.KEYDOWN):
-            event_type = "NA"  # Unknown type
-            if event.type == pygame.KEYUP:
-                event_type = "KU"  # KeyUp
-            if event.type == pygame.KEYDOWN:
-                event_type = "KD"  # KeyDown
+        if self.canvas:
+            if event.type in (pygame.KEYUP, pygame.KEYDOWN):
+                event_type = "NA"  # Unknown type
+                if event.type == pygame.KEYUP:
+                    event_type = "KU"  # KeyUp
+                if event.type == pygame.KEYDOWN:
+                    event_type = "KD"  # KeyDown
 
-            event_label = "{}_{}".format(event_type, event.key)
-            tto_globals.debugger.message("PYGA",
-                                         "handle_input_key() detected: {}".
-                                         format(event_label))
-            tto_globals.events[event_label] = {'type': event_type,
-                                               'keycode': event.key,
-                                               'event': event}
+                event_label = "{}_{}".format(event_type, event.key)
+                tto_globals.debugger.message("PYGA",
+                                             "handle_input_key() detected: {}".
+                                             format(event_label))
+                tto_globals.events[event_label] = {'type': event_type,
+                                                   'keycode': event.key,
+                                                   'event': event}
 
     def init_gui_surfaces(self):
         """Set-up all GUI elements here, and append() each to gui_surfaces
@@ -208,6 +209,7 @@ class TtoPygame(object):
         self.gui_surfaces.append(gui_tstrip)
 
         # A keyboard map showing all keys, mappings, button status, actions
+        # This module maps keyboard input to actions downstream
         gui_keyboard_map = GUISurfaceKeyboardMap(canvas_width=950,
                                                  canvas_height=290,
                                                  blit_x=960,
