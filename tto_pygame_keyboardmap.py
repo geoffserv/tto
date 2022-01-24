@@ -25,6 +25,8 @@ class GUISurfaceKeyboardMap(GUISurface):
                 self.keyboard_layout[row].append(
                     {
                         'keyboard_code': 0,
+                        'setting': "",
+                        'value': 0,
                         'button_label_default': "",
                         'button_label_1': "",
                         'button_label_2': "",
@@ -46,6 +48,12 @@ class GUISurfaceKeyboardMap(GUISurface):
             self.keyboard_layout[0][i][
                 'button_label_default'] = button_default_label
             self.keyboard_layout[0][i]['button_label_1'] = button_default_label
+            i += 1
+
+        i = 0
+        for button_value in (0, 7, 2, 9, 4, 11, 6, 1, 8, 3, 10, 5):
+            self.keyboard_layout[0][i]['value'] = button_value
+            self.keyboard_layout[0][i]['setting'] = "key"
             i += 1
 
         i = 0
@@ -91,6 +99,13 @@ class GUISurfaceKeyboardMap(GUISurface):
                 'button_label_default'] = button_default_label
             self.keyboard_layout[1][i]['button_label_1'] = button_default_label
             i += 1
+
+        i = 0
+        for button_value in (1, 5, 2, 6, 3, 7, 4, 1, 5, 2, 6, 3):
+            self.keyboard_layout[1][i]['value'] = button_value
+            self.keyboard_layout[1][i]['setting'] = "scale"
+            i += 1
+
         i = 0
         #                              bg_color   , fg_color
         for button_default_colors in ((tto_globals.color_white,
@@ -135,6 +150,13 @@ class GUISurfaceKeyboardMap(GUISurface):
             self.keyboard_layout[2][i]['button_label_1'] = \
                 button_default_label
             i += 1
+
+        i = 0
+        for button_value in (1, 5, 2, 6, 3, 7, 4, 1, 5, 2, 6, 3):
+            self.keyboard_layout[2][i]['value'] = button_value
+            self.keyboard_layout[2][i]['setting'] = "chord"
+            i += 1
+
         i = 0
         #                              bg_color   , fg_color
         for button_default_colors in ((tto_globals.color_white,
@@ -358,33 +380,76 @@ class GUISurfaceKeyboardMap(GUISurface):
         self.needs_rendering = False
         for event in tto_globals.events:
             tto_globals.debugger.message(
-                "PYGA",
+                "KEYB",
                 "GUISurfaceKeyboardMap update_control() saw event: {}".format(
                     event))
 
             if tto_globals.events[event]['type'] == "KD":
                 # Seeing a KeyDown event
-                # Turn 'on' the visual button
                 if tto_globals.events[event]['keycode'] in \
                         self.button_keyboard_codes:
-                    self.update_control_invert_button_colors(
-                        self.button_keyboard_codes[
-                            tto_globals.events[event]['keycode']][0],  # row
-                        self.button_keyboard_codes[
+                    # We know about it.  Time to action
+
+                    row = self.button_keyboard_codes[
+                            tto_globals.events[event]['keycode']][0]  # row
+
+                    col = self.button_keyboard_codes[
                             tto_globals.events[event]['keycode']][1]  # col
-                    )
+
+                    # Turn 'on' the visual button
+                    self.update_control_invert_button_colors(row, col)
                     self.needs_rendering = True
+
+                    if self.keyboard_layout[row][col]['setting'] == "key":
+                        tto_globals.debugger.message(
+                            "KEYB",
+                            "Row {} Col {} KB down - Key to {}".format(
+                                row,
+                                col,
+                                self.keyboard_layout[row][col]['value']
+                            )
+                        )
+
+                        tto_globals.key.current_key = \
+                            self.keyboard_layout[row][col]['value']
+
+                    if self.keyboard_layout[row][col]['setting'] == "scale":
+                        tto_globals.debugger.message(
+                            "KEYB",
+                            "Row {} Col {} KB down - Scale to {}".format(
+                                row,
+                                col,
+                                self.keyboard_layout[row][col]['value']
+                            )
+                        )
+
+                        tto_globals.key.current_scale_degree = \
+                            self.keyboard_layout[row][col]['value']
+
+                    if self.keyboard_layout[row][col]['setting'] == "chord":
+                        tto_globals.debugger.message(
+                            "KEYB",
+                            "Row {} Col {} KB down - Chord to {}".format(
+                                row,
+                                col,
+                                self.keyboard_layout[row][col]['value']
+                            )
+                        )
 
             if tto_globals.events[event]['type'] == "KU":
                 # Seeing a KeyUp event
-                # Turn 'off' the visual button
                 if tto_globals.events[event]['keycode'] in \
                         self.button_keyboard_codes:
-                    self.update_control_invert_button_colors(
-                        self.button_keyboard_codes[
-                            tto_globals.events[event]['keycode']][0],  # row
-                        self.button_keyboard_codes[
-                            tto_globals.events[event]['keycode']][1]  # col
-                    )
+                    # We know about it.  action
+
+                    row = self.button_keyboard_codes[
+                              tto_globals.events[event]['keycode']][0]  # row
+
+                    col = self.button_keyboard_codes[
+                        tto_globals.events[event]['keycode']][1]  # col
+
+                    # Turn 'off' the visual button
+                    self.update_control_invert_button_colors(row, col)
+
                     self.needs_rendering = True
                     

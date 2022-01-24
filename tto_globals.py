@@ -127,10 +127,10 @@ note_wheel_labels = {11: {"step": 4,
 class Key(object):
     def __init__(self):
         # current_key is 0-11
-        self.current_key = 11
+        self.current_key = 0
 
         # current_scale_degree is 0-6
-        self.current_scale_degree = 2
+        self.current_scale_degree = 0
 
         self.notes_on = []  # List containing key.notes indices currently
         # playing 0-11
