@@ -42,6 +42,7 @@ class GUISurfaceKeyboardMap(GUISurface):
         # Set-up row 1
         # Key signature / Tone class / Tonal root
         i = 0
+        # Set button labels
         for button_default_label in ('C', 'G', 'D', 'A', 'E', 'B',
                                      'Gb', 'Db', 'Ab', 'Eb', 'Bb',
                                      'F'):
@@ -50,8 +51,9 @@ class GUISurfaceKeyboardMap(GUISurface):
             self.keyboard_layout[0][i]['button_label_1'] = button_default_label
             i += 1
 
+        # Set button actions and action values
         i = 0
-        for button_value in (0, 7, 2, 9, 4, 11, 6, 1, 8, 3, 10, 5):
+        for button_value in range(12):
             self.keyboard_layout[0][i]['value'] = button_value
             self.keyboard_layout[0][i]['setting'] = "key"
             i += 1
@@ -93,6 +95,7 @@ class GUISurfaceKeyboardMap(GUISurface):
             i += 1
 
         # Set-up row 2
+        # Set button labels
         i = 0
         for button_default_label in (1, 5, 2, 6, 3, 7, 4, 1, 5, 2, 6, 3):
             self.keyboard_layout[1][i][
@@ -100,8 +103,9 @@ class GUISurfaceKeyboardMap(GUISurface):
             self.keyboard_layout[1][i]['button_label_1'] = button_default_label
             i += 1
 
+        # Set button actions and values
         i = 0
-        for button_value in (1, 5, 2, 6, 3, 7, 4, 1, 5, 2, 6, 3):
+        for button_value in (0, 1, 2, 3, 4, 5, 6, 0, 1, 2, 3, 4):
             self.keyboard_layout[1][i]['value'] = button_value
             self.keyboard_layout[1][i]['setting'] = "scale"
             i += 1
@@ -152,7 +156,7 @@ class GUISurfaceKeyboardMap(GUISurface):
             i += 1
 
         i = 0
-        for button_value in (1, 5, 2, 6, 3, 7, 4, 1, 5, 2, 6, 3):
+        for button_value in (0, 1, 2, 3, 4, 5, 6, 0, 1, 2, 3, 4):
             self.keyboard_layout[2][i]['value'] = button_value
             self.keyboard_layout[2][i]['setting'] = "chord"
             i += 1
