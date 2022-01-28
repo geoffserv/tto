@@ -58,8 +58,6 @@ class TtoMidi(object):
         self.clock_pulse_delta = time.time()
         self.bpm_detected = 0
 
-
-
         # Check the program config options and attempt to open MIDI ports if
         # they are enabled.  We need an In for receiving upstream MIDI, and
         # an Out to relaying that MIDI downstream + our own inserted messages:
