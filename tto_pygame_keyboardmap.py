@@ -1,5 +1,4 @@
 from tto_pygame_guisurface import GUISurface
-import tto_globals
 from tto_shapes import *
 import pygame
 
@@ -331,25 +330,25 @@ class GUISurfaceKeyboardMap(GUISurface):
                                  1)
                 # Per-button label 1 - 5 char width
                 self.draw_label(coordinates=(110 + (col * 70) + 4,
-                                             10 + (row * 70) ),
+                                             10 + (row * 70)),
                                 degrees=0,
                                 text_label="{}".format(
                                     self.keyboard_layout[row][col]
                                     ['button_label_1']),
                                 font=self.font,
                                 color=self.keyboard_layout[row][col]
-                                 ['button_color_fg'],
+                                ['button_color_fg'],
                                 align="left")
                 # Per-button label 2 - 5 char width
                 self.draw_label(coordinates=(110 + (col * 70) + 4,
-                                             10 + (row * 70)  + 20),
+                                             10 + (row * 70) + 20),
                                 degrees=0,
                                 text_label="{}".format(
                                     self.keyboard_layout[row][col]
                                     ['button_label_2']),
                                 font=self.font,
                                 color=self.keyboard_layout[row][col]
-                                 ['button_color_fg'],
+                                ['button_color_fg'],
                                 align="left")
                 # Per-button label 3 - 5 char width
                 self.draw_label(coordinates=(110 + (col * 70) + 4,
@@ -360,23 +359,34 @@ class GUISurfaceKeyboardMap(GUISurface):
                                     ['button_label_3']),
                                 font=self.font,
                                 color=self.keyboard_layout[row][col]
-                                 ['button_color_fg'],
+                                ['button_color_fg'],
                                 align="left")
+
+    def get_button_color(self, row, col, color_setting):
+        # I had to make these to get this to lint cleanly
+        return self.keyboard_layout[row][col][color_setting]
+
+    def set_button_color(self, row, col, color_setting, new_color_setting):
+        self.keyboard_layout[row][col][color_setting] = \
+            self.keyboard_layout[row][col][new_color_setting]
 
     def update_control_invert_button_colors(self, row, col):
         # Flip-flop foreground and background colors for the button boxes
         # for whenever a button is pushed / released
-        if (self.keyboard_layout[row][col]['button_color_bg'] ==
-           self.keyboard_layout[row][col]['button_color_bg_default']):
-            self.keyboard_layout[row][col]['button_color_bg'] = \
-                self.keyboard_layout[row][col]['button_color_bg_on']
-            self.keyboard_layout[row][col]['button_color_fg'] = \
-                self.keyboard_layout[row][col]['button_color_bg_default']
+        if (self.get_button_color(row, col, 'button_color_bg') ==
+           self.get_button_color(row, col, 'button_color_bg_default')):
+            # If the background is 'bg_default', swap it to 'bg_on'
+            self.set_button_color(row, col, 'button_color_bg',
+                                  'button_color_bg_on')
+            # and set the foreground from 'fg_default' to 'bg_default'
+            self.set_button_color(row, col, 'button_color_fg',
+                                  'button_color_bg_default')
         else:
-            self.keyboard_layout[row][col]['button_color_fg'] = \
-                self.keyboard_layout[row][col]['button_color_fg_default']
-            self.keyboard_layout[row][col]['button_color_bg'] = \
-                self.keyboard_layout[row][col]['button_color_bg_default']
+            # otherwise set everything back to '_default'
+            self.set_button_color(row, col, 'button_color_fg',
+                                  'button_color_fg_default')
+            self.set_button_color(row, col, 'button_color_bg',
+                                  'button_color_bg_default')
 
     def update_control(self):
         """ Overriding GUISurface.update_control()
@@ -394,6 +404,7 @@ class GUISurfaceKeyboardMap(GUISurface):
                         self.button_keyboard_codes:
                     # We know about it.  Time to action
 
+                    # capture row and col of the KeyDown event
                     row = self.button_keyboard_codes[
                             tto_globals.events[event]['keycode']][0]  # row
 
