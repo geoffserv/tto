@@ -415,41 +415,26 @@ class GUISurfaceKeyboardMap(GUISurface):
                     self.update_control_invert_button_colors(row, col)
                     self.needs_rendering = True
 
+                    # If the detected keystroke is to change the 'key':
                     if self.keyboard_layout[row][col]['setting'] == "key":
-                        tto_globals.debugger.message(
-                            "KEYB",
-                            "Row {} Col {} KB down - Key to {}".format(
-                                row,
-                                col,
-                                self.keyboard_layout[row][col]['value']
-                            )
-                        )
+                        new_key = self.keyboard_layout[row][col]['value']
 
-                        tto_globals.key.current_key = \
-                            self.keyboard_layout[row][col]['value']
+                        # Change the key to the associated keyboard key 'value'
+                        tto_globals.key.set_key(new_key)
 
+                    # If the detected keystroke is to change the 'scale':
                     if self.keyboard_layout[row][col]['setting'] == "scale":
-                        tto_globals.debugger.message(
-                            "KEYB",
-                            "Row {} Col {} KB down - Scale to {}".format(
-                                row,
-                                col,
-                                self.keyboard_layout[row][col]['value']
-                            )
-                        )
+                        scale_degree = self.keyboard_layout[row][col]['value']
 
-                        tto_globals.key.current_scale_degree = \
-                            self.keyboard_layout[row][col]['value']
+                        # Change the scale degree to the assoc. value
+                        tto_globals.key.set_scale_degree(scale_degree)
 
+                    # If the detected keystroke is to play a chord note:
                     if self.keyboard_layout[row][col]['setting'] == "chord":
-                        tto_globals.debugger.message(
-                            "KEYB",
-                            "Row {} Col {} KB down - Chord to {}".format(
-                                row,
-                                col,
-                                self.keyboard_layout[row][col]['value']
-                            )
-                        )
+                        note = self.keyboard_layout[row][col]['value']
+
+                        # Send a play command for the note
+                        tto_globals.key.play(note)
 
             if tto_globals.events[event]['type'] == "KU":
                 # Seeing a KeyUp event

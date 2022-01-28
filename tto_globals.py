@@ -157,6 +157,26 @@ class Key(object):
         self.chord_scale = [0, 1, 2, 3, 4, 5, 11]
         self.key_scale_ordered = [0, 2, 4, 11, 1, 3, 5]
 
+    def set_key(self, new_key):
+        debugger.message(
+            "KEYX",
+            "Set Scale Degree to {}".format(new_key)
+        )
+        self.current_scale_degree = new_key
+
+    def set_scale_degree(self, scale_degree):
+        debugger.message(
+            "KEYX",
+            "Set Scale Degree to {}".format(scale_degree)
+        )
+        self.current_scale_degree = scale_degree
+
+    def play(self, note):
+        debugger.message(
+            "KEYX",
+            "Play Note {}".format(note)
+        )
+
 
 # key is a global instance of Key()
 key = Key()
