@@ -398,22 +398,23 @@ class GUISurfaceKeyboardMap(GUISurface):
                 "GUISurfaceKeyboardMap update_control() saw event: {}".format(
                     event))
 
-            if tto_globals.events[event]['type'] == "KD":
-                # Seeing a KeyDown event
-                if tto_globals.events[event]['keycode'] in \
-                        self.button_keyboard_codes:
-                    # We know about it.  Time to action
+            if tto_globals.events[event]['keycode'] in \
+                    self.button_keyboard_codes:
+                # We know about it.  Time to action
 
-                    # capture row and col of the KeyDown event
-                    row = self.button_keyboard_codes[
-                            tto_globals.events[event]['keycode']][0]  # row
+                # capture row and col of the KeyDown event
+                row = self.button_keyboard_codes[
+                        tto_globals.events[event]['keycode']][0]  # row
 
-                    col = self.button_keyboard_codes[
-                            tto_globals.events[event]['keycode']][1]  # col
+                col = self.button_keyboard_codes[
+                        tto_globals.events[event]['keycode']][1]  # col
 
-                    # Turn 'on' the visual button
-                    self.update_control_invert_button_colors(row, col)
-                    self.needs_rendering = True
+                # Turn 'on' the visual button
+                self.update_control_invert_button_colors(row, col)
+                self.needs_rendering = True
+
+                if tto_globals.events[event]['type'] == "KD":
+                    # Seeing a KeyDown event
 
                     # If the detected keystroke is to change the 'key':
                     if self.keyboard_layout[row][col]['setting'] == "key":
@@ -429,27 +430,15 @@ class GUISurfaceKeyboardMap(GUISurface):
                         # Change the scale degree to the assoc. value
                         tto_globals.key.set_scale_degree(scale_degree)
 
-                    # If the detected keystroke is to play a chord note:
-                    if self.keyboard_layout[row][col]['setting'] == "chord":
-                        note = self.keyboard_layout[row][col]['value']
+                # If the detected keystroke is to play a chord note:
+                if self.keyboard_layout[row][col]['setting'] == "chord":
+                    note_index = self.keyboard_layout[row][col]['value']
 
+                    if tto_globals.events[event]['type'] == "KD":
+                        # Seeing a KeyDown event
                         # Send a play command for the note
-                        tto_globals.key.play(note)
+                        tto_globals.key.trigger(note_index, mode="play")
 
-            if tto_globals.events[event]['type'] == "KU":
-                # Seeing a KeyUp event
-                if tto_globals.events[event]['keycode'] in \
-                        self.button_keyboard_codes:
-                    # We know about it.  action
-
-                    row = self.button_keyboard_codes[
-                              tto_globals.events[event]['keycode']][0]  # row
-
-                    col = self.button_keyboard_codes[
-                        tto_globals.events[event]['keycode']][1]  # col
-
-                    # Turn 'off' the visual button
-                    self.update_control_invert_button_colors(row, col)
-
-                    self.needs_rendering = True
-                    
+                    if tto_globals.events[event]['type'] == "KU":
+                        # Seeing a KeyUp event
+                        tto_globals.key.trigger(note_index, mode="stop")

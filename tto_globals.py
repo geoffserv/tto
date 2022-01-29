@@ -159,24 +159,38 @@ class Key(object):
 
     def set_key(self, new_key):
         debugger.message(
-            "KEYX",
+            "KEY_",
             "Set Scale Degree to {}".format(new_key)
         )
-        self.current_scale_degree = new_key
+        self.current_key = new_key
 
     def set_scale_degree(self, scale_degree):
         debugger.message(
-            "KEYX",
+            "KEY_",
             "Set Scale Degree to {}".format(scale_degree)
         )
         self.current_scale_degree = scale_degree
 
-    def play(self, note):
+    def trigger(self, note_index, mode="play"):
+
+        # The keyboard will be sending an index of note from the key binding
+        # Need to add the scale degree and wrap at 12 to play the chord
+        #   notes according to the scale degree
+        target_note = (note_index + self.current_scale_degree % 12)
+
+
         debugger.message(
-            "KEYX",
-            "Play Note {}".format(note)
+            "KEY_",
+            "target_note, Mode {}, value {}".format(mode, target_note)
         )
 
+        if mode == "play":
+            if target_note not in self.notes_on:
+                self.notes_on.append(target_note)
+
+        if mode == "stop":
+            if target_note in self.notes_on:
+                self.notes_on.remove(target_note)
 
 
 # key is a global instance of Key()
