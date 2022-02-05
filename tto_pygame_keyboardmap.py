@@ -409,6 +409,9 @@ class GUISurfaceKeyboardMap(GUISurface):
                 col = self.button_keyboard_codes[
                         tto_globals.events[event]['keycode']][1]  # col
 
+                # The value of the key pressed
+                key_index = self.keyboard_layout[row][col]['value']
+
                 # Turn 'on' the visual button
                 self.update_control_invert_button_colors(row, col)
                 self.needs_rendering = True
@@ -418,27 +421,24 @@ class GUISurfaceKeyboardMap(GUISurface):
 
                     # If the detected keystroke is to change the 'key':
                     if self.keyboard_layout[row][col]['setting'] == "key":
-                        new_key = self.keyboard_layout[row][col]['value']
 
                         # Change the key to the associated keyboard key 'value'
-                        tto_globals.key.set_key(new_key)
+                        tto_globals.key.set_key(key_index)
 
                     # If the detected keystroke is to change the 'scale':
                     if self.keyboard_layout[row][col]['setting'] == "scale":
-                        scale_degree = self.keyboard_layout[row][col]['value']
 
                         # Change the scale degree to the assoc. value
-                        tto_globals.key.set_scale_degree(scale_degree)
+                        tto_globals.key.set_scale_degree(key_index)
 
                 # If the detected keystroke is to play a chord note:
                 if self.keyboard_layout[row][col]['setting'] == "chord":
-                    note_index = self.keyboard_layout[row][col]['value']
 
                     if tto_globals.events[event]['type'] == "KD":
                         # Seeing a KeyDown event
                         # Send a play command for the note
-                        tto_globals.key.trigger(note_index, mode="play")
+                        tto_globals.key.trigger(key_index, mode="play")
 
                     if tto_globals.events[event]['type'] == "KU":
                         # Seeing a KeyUp event
-                        tto_globals.key.trigger(note_index, mode="stop")
+                        tto_globals.key.trigger(key_index, mode="stop")
