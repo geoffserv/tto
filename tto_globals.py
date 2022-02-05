@@ -30,9 +30,14 @@ from tto_debugger import TtoDebugger
 from tto_key import Key
 
 
+debugger = TtoDebugger()  # Program-wide logger and debugger object
+
+config = ConfigParser()  # Program-wide configuration object
+
+key = Key()  # Program-wide music math object
+
+
 def config_file_load(config_file):
-    global debugger
-    global config
     debugger.message("INFO", "Loading config file: {}".format(
         config_file))
     config.read(config_file)
@@ -43,9 +48,6 @@ def config_file_load(config_file):
             cay, config['tto'][cay]))
 
 
-debugger = TtoDebugger()  # Program-wide logger and debugger
-
-config = ConfigParser()  # Program-wide configuration
 # These defaults apply unless overridden in the config file ['tto'] section:
 config['DEFAULT'] = {'MidiOutEnabled': 'False'}
 config['DEFAULT'] = {'MidiOutPort': 'wavestate 1 In'}
@@ -99,9 +101,6 @@ events = {}
 #    'NA' = Unknown event type
 #    'KU' = KeyUp with keycode in 'keycode'
 #    'KD' = KeyDown with keycode in 'keycode'
-
-# key is a global instance of Key()
-key = Key()
 
 # For now, how intervals are defined:
 # The 'slice number' around the circle of fifths

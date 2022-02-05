@@ -7,19 +7,19 @@ available program-wide.
 
 Requirements
 ------------
-tbd : tbd
+tto_globals : Program-wide global variable module for tto.
 
 Classes
 -------
-tbd : tbd
+Key : key, scale, and chord data class
 
 Functions
 ---------
-tbd : tbd
+none : none
 
 Variables
 ---------
-tbd : tbd
+none : none
 """
 
 import tto_globals
