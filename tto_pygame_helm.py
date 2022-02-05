@@ -1,5 +1,4 @@
 from tto_pygame_guisurface import GUISurface
-import tto_globals
 import tto_fonts
 from tto_shapes import *
 
@@ -50,8 +49,8 @@ class GUISurfaceHelm(GUISurface):
     def update_control(self):
         self.needs_rendering = False
         # Handle the dict of events passed in for this update
-        for event in tto_globals.events:
-            pass
+        # for event in tto_globals.events:
+        #    pass
 
     def draw_control(self):
 
@@ -167,7 +166,7 @@ class GUISurfaceHelm(GUISurface):
                         self.color_bg)
 
         # Scale Degree number & labels all the way around the wheel
-        for label in tto_globals.note_wheel_labels:
+        for label in tto_globals.key.fifths:
             # The actual digit label
             polygon = ShapeWheelRay(canvas_size=self.r * 2,
                                     r=self.r - 130,
@@ -175,7 +174,7 @@ class GUISurfaceHelm(GUISurface):
 
             self.draw_label(polygon.coordinates[1],
                             polygon.degrees[0],
-                            str(tto_globals.note_wheel_labels[label]
+                            str(tto_globals.key.fifths[label]
                                 ["step"]),
                             tto_fonts.font['medium_bold'],
                             self.color_bg)
@@ -186,7 +185,7 @@ class GUISurfaceHelm(GUISurface):
                                     slice_no=label)
             self.draw_label(polygon.coordinates[1],
                             polygon.degrees[0],
-                            str(tto_globals.note_wheel_labels[label]
+                            str(tto_globals.key.fifths[label]
                                 ["triad"]),
                             tto_fonts.font['small_bold'],
                             self.color_bg)
@@ -197,7 +196,7 @@ class GUISurfaceHelm(GUISurface):
                                     slice_no=label)
             self.draw_label(polygon.coordinates[1],
                             polygon.degrees[0],
-                            str(tto_globals.note_wheel_labels[label]
+                            str(tto_globals.key.fifths[label]
                                 ["mode"]),
                             tto_fonts.font['x_small'],
                             self.color_bg)
@@ -237,7 +236,7 @@ class GUISurfaceHelm(GUISurface):
                         tto_fonts.font['x_small'],
                         self.color_bg)
 
-        # The 'slices' of tto_globals.note_wheel_labels in the default order
+        # The 'slices' of tto_globals.key.fifths in the default order
         scale_degree_order = [11, 0, 1, 2, 3, 4, 5]
 
         # Now Cut The Deck depending on tto_globals.key.current_scale_degree
@@ -247,14 +246,14 @@ class GUISurfaceHelm(GUISurface):
                 scale_degree_order[0:7-tto_globals.key.current_scale_degree]
 
         # Chord interval number all the way around the wheel
-        for label in tto_globals.note_wheel_labels:
+        for label in tto_globals.key.fifths:
             # The actual digit label
             polygon = ShapeWheelRay(canvas_size=self.r * 2,
                                     r=self.r - 295,
                                     slice_no=label)
             self.draw_label(polygon.coordinates[1],
                             polygon.degrees[0],
-                            str(tto_globals.note_wheel_labels[
+                            str(tto_globals.key.fifths[
                                     scale_degree_order.pop(0)
                                 ]
                                 ["step"]),

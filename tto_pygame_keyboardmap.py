@@ -1,5 +1,4 @@
 from tto_pygame_guisurface import GUISurface
-import tto_globals
 from tto_shapes import *
 import pygame
 
@@ -42,6 +41,7 @@ class GUISurfaceKeyboardMap(GUISurface):
         # Set-up row 1
         # Key signature / Tone class / Tonal root
         i = 0
+        # Set button labels
         for button_default_label in ('C', 'G', 'D', 'A', 'E', 'B',
                                      'Gb', 'Db', 'Ab', 'Eb', 'Bb',
                                      'F'):
@@ -50,8 +50,9 @@ class GUISurfaceKeyboardMap(GUISurface):
             self.keyboard_layout[0][i]['button_label_1'] = button_default_label
             i += 1
 
+        # Set button actions and action values
         i = 0
-        for button_value in (0, 7, 2, 9, 4, 11, 6, 1, 8, 3, 10, 5):
+        for button_value in range(12):
             self.keyboard_layout[0][i]['value'] = button_value
             self.keyboard_layout[0][i]['setting'] = "key"
             i += 1
@@ -93,6 +94,7 @@ class GUISurfaceKeyboardMap(GUISurface):
             i += 1
 
         # Set-up row 2
+        # Set button labels
         i = 0
         for button_default_label in (1, 5, 2, 6, 3, 7, 4, 1, 5, 2, 6, 3):
             self.keyboard_layout[1][i][
@@ -100,8 +102,9 @@ class GUISurfaceKeyboardMap(GUISurface):
             self.keyboard_layout[1][i]['button_label_1'] = button_default_label
             i += 1
 
+        # Set button actions and values
         i = 0
-        for button_value in (1, 5, 2, 6, 3, 7, 4, 1, 5, 2, 6, 3):
+        for button_value in (0, 1, 2, 3, 4, 5, 6, 0, 1, 2, 3, 4):
             self.keyboard_layout[1][i]['value'] = button_value
             self.keyboard_layout[1][i]['setting'] = "scale"
             i += 1
@@ -152,7 +155,7 @@ class GUISurfaceKeyboardMap(GUISurface):
             i += 1
 
         i = 0
-        for button_value in (1, 5, 2, 6, 3, 7, 4, 1, 5, 2, 6, 3):
+        for button_value in (0, 1, 2, 3, 4, 5, 6, 0, 1, 2, 3, 4):
             self.keyboard_layout[2][i]['value'] = button_value
             self.keyboard_layout[2][i]['setting'] = "chord"
             i += 1
@@ -327,25 +330,25 @@ class GUISurfaceKeyboardMap(GUISurface):
                                  1)
                 # Per-button label 1 - 5 char width
                 self.draw_label(coordinates=(110 + (col * 70) + 4,
-                                             10 + (row * 70) ),
+                                             10 + (row * 70)),
                                 degrees=0,
                                 text_label="{}".format(
                                     self.keyboard_layout[row][col]
                                     ['button_label_1']),
                                 font=self.font,
                                 color=self.keyboard_layout[row][col]
-                                 ['button_color_fg'],
+                                ['button_color_fg'],
                                 align="left")
                 # Per-button label 2 - 5 char width
                 self.draw_label(coordinates=(110 + (col * 70) + 4,
-                                             10 + (row * 70)  + 20),
+                                             10 + (row * 70) + 20),
                                 degrees=0,
                                 text_label="{}".format(
                                     self.keyboard_layout[row][col]
                                     ['button_label_2']),
                                 font=self.font,
                                 color=self.keyboard_layout[row][col]
-                                 ['button_color_fg'],
+                                ['button_color_fg'],
                                 align="left")
                 # Per-button label 3 - 5 char width
                 self.draw_label(coordinates=(110 + (col * 70) + 4,
@@ -356,23 +359,34 @@ class GUISurfaceKeyboardMap(GUISurface):
                                     ['button_label_3']),
                                 font=self.font,
                                 color=self.keyboard_layout[row][col]
-                                 ['button_color_fg'],
+                                ['button_color_fg'],
                                 align="left")
+
+    def get_button_color(self, row, col, color_setting):
+        # I had to make these to get this to lint cleanly
+        return self.keyboard_layout[row][col][color_setting]
+
+    def set_button_color(self, row, col, color_setting, new_color_setting):
+        self.keyboard_layout[row][col][color_setting] = \
+            self.keyboard_layout[row][col][new_color_setting]
 
     def update_control_invert_button_colors(self, row, col):
         # Flip-flop foreground and background colors for the button boxes
         # for whenever a button is pushed / released
-        if (self.keyboard_layout[row][col]['button_color_bg'] ==
-           self.keyboard_layout[row][col]['button_color_bg_default']):
-            self.keyboard_layout[row][col]['button_color_bg'] = \
-                self.keyboard_layout[row][col]['button_color_bg_on']
-            self.keyboard_layout[row][col]['button_color_fg'] = \
-                self.keyboard_layout[row][col]['button_color_bg_default']
+        if (self.get_button_color(row, col, 'button_color_bg') ==
+           self.get_button_color(row, col, 'button_color_bg_default')):
+            # If the background is 'bg_default', swap it to 'bg_on'
+            self.set_button_color(row, col, 'button_color_bg',
+                                  'button_color_bg_on')
+            # and set the foreground from 'fg_default' to 'bg_default'
+            self.set_button_color(row, col, 'button_color_fg',
+                                  'button_color_bg_default')
         else:
-            self.keyboard_layout[row][col]['button_color_fg'] = \
-                self.keyboard_layout[row][col]['button_color_fg_default']
-            self.keyboard_layout[row][col]['button_color_bg'] = \
-                self.keyboard_layout[row][col]['button_color_bg_default']
+            # otherwise set everything back to '_default'
+            self.set_button_color(row, col, 'button_color_fg',
+                                  'button_color_fg_default')
+            self.set_button_color(row, col, 'button_color_bg',
+                                  'button_color_bg_default')
 
     def update_control(self):
         """ Overriding GUISurface.update_control()
@@ -384,72 +398,47 @@ class GUISurfaceKeyboardMap(GUISurface):
                 "GUISurfaceKeyboardMap update_control() saw event: {}".format(
                     event))
 
-            if tto_globals.events[event]['type'] == "KD":
-                # Seeing a KeyDown event
-                if tto_globals.events[event]['keycode'] in \
-                        self.button_keyboard_codes:
-                    # We know about it.  Time to action
+            if tto_globals.events[event]['keycode'] in \
+                    self.button_keyboard_codes:
+                # We know about it.  Time to action
 
-                    row = self.button_keyboard_codes[
-                            tto_globals.events[event]['keycode']][0]  # row
+                # capture row and col of the KeyDown event
+                row = self.button_keyboard_codes[
+                        tto_globals.events[event]['keycode']][0]  # row
 
-                    col = self.button_keyboard_codes[
-                            tto_globals.events[event]['keycode']][1]  # col
-
-                    # Turn 'on' the visual button
-                    self.update_control_invert_button_colors(row, col)
-                    self.needs_rendering = True
-
-                    if self.keyboard_layout[row][col]['setting'] == "key":
-                        tto_globals.debugger.message(
-                            "KEYB",
-                            "Row {} Col {} KB down - Key to {}".format(
-                                row,
-                                col,
-                                self.keyboard_layout[row][col]['value']
-                            )
-                        )
-
-                        tto_globals.key.current_key = \
-                            self.keyboard_layout[row][col]['value']
-
-                    if self.keyboard_layout[row][col]['setting'] == "scale":
-                        tto_globals.debugger.message(
-                            "KEYB",
-                            "Row {} Col {} KB down - Scale to {}".format(
-                                row,
-                                col,
-                                self.keyboard_layout[row][col]['value']
-                            )
-                        )
-
-                        tto_globals.key.current_scale_degree = \
-                            self.keyboard_layout[row][col]['value']
-
-                    if self.keyboard_layout[row][col]['setting'] == "chord":
-                        tto_globals.debugger.message(
-                            "KEYB",
-                            "Row {} Col {} KB down - Chord to {}".format(
-                                row,
-                                col,
-                                self.keyboard_layout[row][col]['value']
-                            )
-                        )
-
-            if tto_globals.events[event]['type'] == "KU":
-                # Seeing a KeyUp event
-                if tto_globals.events[event]['keycode'] in \
-                        self.button_keyboard_codes:
-                    # We know about it.  action
-
-                    row = self.button_keyboard_codes[
-                              tto_globals.events[event]['keycode']][0]  # row
-
-                    col = self.button_keyboard_codes[
+                col = self.button_keyboard_codes[
                         tto_globals.events[event]['keycode']][1]  # col
 
-                    # Turn 'off' the visual button
-                    self.update_control_invert_button_colors(row, col)
+                # The value of the key pressed
+                key_index = self.keyboard_layout[row][col]['value']
 
-                    self.needs_rendering = True
-                    
+                # Turn 'on' the visual button
+                self.update_control_invert_button_colors(row, col)
+                self.needs_rendering = True
+
+                if tto_globals.events[event]['type'] == "KD":
+                    # Seeing a KeyDown event
+
+                    # If the detected keystroke is to change the 'key':
+                    if self.keyboard_layout[row][col]['setting'] == "key":
+
+                        # Change the key to the associated keyboard key 'value'
+                        tto_globals.key.set_key(key_index)
+
+                    # If the detected keystroke is to change the 'scale':
+                    if self.keyboard_layout[row][col]['setting'] == "scale":
+
+                        # Change the scale degree to the assoc. value
+                        tto_globals.key.set_scale_degree(key_index)
+
+                # If the detected keystroke is to play a chord note:
+                if self.keyboard_layout[row][col]['setting'] == "chord":
+
+                    if tto_globals.events[event]['type'] == "KD":
+                        # Seeing a KeyDown event
+                        # Send a play command for the note
+                        tto_globals.key.trigger(key_index, mode="play")
+
+                    if tto_globals.events[event]['type'] == "KU":
+                        # Seeing a KeyUp event
+                        tto_globals.key.trigger(key_index, mode="stop")

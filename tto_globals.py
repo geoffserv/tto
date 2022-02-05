@@ -27,11 +27,17 @@ midi: If MIDI enabled, global instance of TtoMidi for message handling.
 
 from configparser import ConfigParser
 from tto_debugger import TtoDebugger
+from tto_key import Key
+
+
+debugger = TtoDebugger()  # Program-wide logger and debugger object
+
+config = ConfigParser()  # Program-wide configuration object
+
+key = Key()  # Program-wide music math object
 
 
 def config_file_load(config_file):
-    global debugger
-    global config
     debugger.message("INFO", "Loading config file: {}".format(
         config_file))
     config.read(config_file)
@@ -42,9 +48,6 @@ def config_file_load(config_file):
             cay, config['tto'][cay]))
 
 
-debugger = TtoDebugger()  # Program-wide logger and debugger
-
-config = ConfigParser()  # Program-wide configuration
 # These defaults apply unless overridden in the config file ['tto'] section:
 config['DEFAULT'] = {'MidiOutEnabled': 'False'}
 config['DEFAULT'] = {'MidiOutPort': 'wavestate 1 In'}
@@ -98,101 +101,6 @@ events = {}
 #    'NA' = Unknown event type
 #    'KU' = KeyUp with keycode in 'keycode'
 #    'KD' = KeyDown with keycode in 'keycode'
-
-# Labels used around the circle
-note_wheel_labels = {11: {"step": 4,
-                          "triad": "MAJ",
-                          "mode": "Lydian"},
-                     0: {"step": 1,
-                         "triad": "MAJ",
-                         "mode": "Ionian"},
-                     1: {"step": 5,
-                         "triad": "MAJ",
-                         "mode": "Mixolydian"},
-                     2: {"step": 2,
-                         "triad": "min",
-                         "mode": "Dorian"},
-                     3: {"step": 6,
-                         "triad": "min",
-                         "mode": "Aeolian"},
-                     4: {"step": 3,
-                         "triad": "min",
-                         "mode": "Phrygian"},
-                     5: {"step": 7,
-                         "triad": "dim",
-                         "mode": "Locrian"},
-                     }
-
-
-class Key(object):
-    def __init__(self):
-        # current_key is 0-11
-        self.current_key = 0
-
-        # current_scale_degree is 0-6
-        self.current_scale_degree = 0
-
-        self.notes_on = []  # List containing key.notes indices currently
-        # playing 0-11
-
-        self.notes = [
-            {'noteName': 'C', 'sharpName': 'C', 'kbNum': 0},
-            {'noteName': 'G', 'sharpName': 'G', 'kbNum': 7},
-            {'noteName': 'D', 'sharpName': 'D', 'kbNum': 2},
-            {'noteName': 'A', 'sharpName': 'A', 'kbNum': 9},
-            {'noteName': 'E', 'sharpName': 'E', 'kbNum': 4},
-            {'noteName': 'B', 'sharpName': 'B', 'kbNum': 11},
-            {'noteName': 'Gb', 'sharpName': 'F#', 'kbNum': 6},
-            {'noteName': 'Db', 'sharpName': 'C#', 'kbNum': 1},
-            {'noteName': 'Ab', 'sharpName': 'G#', 'kbNum': 8},
-            {'noteName': 'Eb', 'sharpName': 'D#', 'kbNum': 3},
-            {'noteName': 'Bb', 'sharpName': 'A#', 'kbNum': 10},
-            {'noteName': 'F', 'sharpName': 'E#', 'kbNum': 5}
-                    ]
-
-        self.diatonic = [0, 1, 2, 3, 4, 5, 11]
-        self.chord_scale = [0, 1, 2, 3, 4, 5, 11]
-        self.key_scale_ordered = [0, 2, 4, 11, 1, 3, 5]
-
-    def update_diatonic(self):
-        self.diatonic = []
-        for i in [0, 1, 2, 3, 4, 5, 11]:
-            self.diatonic.append(
-                (self.current_key + i) % 12
-            )
-
-    def update_chord_scale(self):
-        self.chord_scale = []
-        for i in range(self.current_key_mode, self.current_key_mode + 7):
-            self.chord_scale.append(self.diatonic[i % 7])
-
-    def rotate_key(self, add_by=0):
-        self.current_key += add_by
-        self.current_key = self.current_key % 12  # Rollover range 0-11
-        self.update_diatonic()
-
-    def rotate_key_mode(self, add_by=0):
-        self.current_key_mode += add_by
-        self.current_key_mode = self.current_key_mode % 7
-
-    def rotate_chord(self, add_by=0, set_to=None):
-        self.current_chord_root += add_by
-
-        if set_to is not None:
-            self.current_chord_root = set_to
-
-        self.current_chord_root = self.current_chord_root % 12  # Rollover ...
-
-        self.update_chord_scale()
-
-    def calculate_chord(self, chord_def):
-        chord = []
-        for note in chord_def:
-            chord.append(self.chord_scale[chord_slices_dict[note]])
-        return chord
-
-# key is the global instance of Key
-key = Key()
 
 # For now, how intervals are defined:
 # The 'slice number' around the circle of fifths
