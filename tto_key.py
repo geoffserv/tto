@@ -35,10 +35,13 @@ class Key(object):
 
         self.notes_on = {}  # dict containing key.notes indices currently
         # playing 0-11
-        # self.notes_on[key_index] = (key, note, octave)
-        #   key_index = index sent from tto_pygame_keyboardmap
-        #   key = self.current_key at the time of triggering the note
-        #   note = self.notes index at the time of triggering the note
+
+        self.keyboard_keys_down = {}  # dict containing event keycodes which
+        # previously triggered a keydown.  So they're presumably still down.
+        # Later when a key is lifted, check the keycode against this to
+        # figure out the key & scale degree back when it was triggered,
+        # so it's possible to know which thing to now turn off.
+        # [keycode] = target_note
 
         # 12 tones arranged by fifths and their piano keyboard key kbNum 0-11
         self.notes = [
@@ -100,7 +103,7 @@ class Key(object):
         )
         self.current_scale_degree = scale_degree
 
-    def trigger(self, note_index, mode="play"):
+    def trigger(self, note_index, keycode, mode="play"):
 
         # The keyboard will be sending an index of note from the key binding
         # Need to add the scale degree and wrap at 7 because the scale will be
@@ -117,8 +120,9 @@ class Key(object):
 
         tto_globals.debugger.message(
             "KEY_",
-            "Mode {}, index {}, scale_degree {}, key {} = target_note {}".
+            "Mode {}, k_code {}, index {}, s_degree {}, key {} = t_note {}".
             format(mode,
+                   keycode,
                    note_index,
                    self.current_scale_degree,
                    self.current_key,
@@ -127,10 +131,12 @@ class Key(object):
 
         if mode == "play":
             if target_note not in self.notes_on:
-                pass
                 self.notes_on[target_note] = True
+                self.keyboard_keys_down[keycode] = target_note
 
         if mode == "stop":
-            if target_note in self.notes_on:
-                pass
-                del self.notes_on[target_note]
+            #if target_note in self.notes_on:
+            #    del self.notes_on[target_note]
+            if keycode in self.keyboard_keys_down:
+                del self.notes_on[self.keyboard_keys_down[keycode]]
+                del self.keyboard_keys_down[keycode]

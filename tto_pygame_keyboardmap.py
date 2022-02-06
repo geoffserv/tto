@@ -398,16 +398,15 @@ class GUISurfaceKeyboardMap(GUISurface):
                 "GUISurfaceKeyboardMap update_control() saw event: {}".format(
                     event))
 
-            if tto_globals.events[event]['keycode'] in \
-                    self.button_keyboard_codes:
+            keycode = tto_globals.events[event]['keycode']
+
+            if keycode in self.button_keyboard_codes:
                 # We know about it.  Time to action
 
                 # capture row and col of the KeyDown event
-                row = self.button_keyboard_codes[
-                        tto_globals.events[event]['keycode']][0]  # row
+                row = self.button_keyboard_codes[keycode][0]  # row
 
-                col = self.button_keyboard_codes[
-                        tto_globals.events[event]['keycode']][1]  # col
+                col = self.button_keyboard_codes[keycode][1]  # col
 
                 # The value of the key pressed
                 key_index = self.keyboard_layout[row][col]['value']
@@ -437,8 +436,12 @@ class GUISurfaceKeyboardMap(GUISurface):
                     if tto_globals.events[event]['type'] == "KD":
                         # Seeing a KeyDown event
                         # Send a play command for the note
-                        tto_globals.key.trigger(key_index, mode="play")
+                        tto_globals.key.trigger(key_index,
+                                                keycode,
+                                                mode="play")
 
                     if tto_globals.events[event]['type'] == "KU":
                         # Seeing a KeyUp event
-                        tto_globals.key.trigger(key_index, mode="stop")
+                        tto_globals.key.trigger(key_index,
+                                                keycode,
+                                                mode="stop")
