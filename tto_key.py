@@ -54,7 +54,7 @@ class Key(object):
             {'noteName': 'Eb', 'sharpName': 'D#', 'kbNum': 3},
             {'noteName': 'Bb', 'sharpName': 'A#', 'kbNum': 10},
             {'noteName': 'F', 'sharpName': 'E#', 'kbNum': 5}
-                    ]
+        ]
 
         # Diatonic fifths, their associated triad chords and scale degree modes
         self.fifths = {11: {"step": 4,
@@ -103,21 +103,34 @@ class Key(object):
     def trigger(self, note_index, mode="play"):
 
         # The keyboard will be sending an index of note from the key binding
-        # Need to add the scale degree and wrap at 12 to play the chord
-        #   notes according to the scale degree
-        target_note = (note_index + self.current_scale_degree % 12)
+        # Need to add the scale degree and wrap at 7 because the scale will be
+        # 0-6 (7 tones)
+        target_note = ((note_index +
+                        self.current_scale_degree)
+                       % 7)
+        # If it's 6, it's 11.  We skip the non-diatonics 6,7,8,9,10
+        if target_note == 6:
+            target_note = 11
+
+        # now offset by the key and wrap at 12.  all chromatic tones are 0-11
+        target_note = (target_note + self.current_key) % 12
 
         tto_globals.debugger.message(
             "KEY_",
-            "target_note, Mode {}, value {}".format(mode, target_note)
+            "Mode {}, index {}, scale_degree {}, key {} = target_note {}".
+            format(mode,
+                   note_index,
+                   self.current_scale_degree,
+                   self.current_key,
+                   target_note)
         )
 
         if mode == "play":
             if target_note not in self.notes_on:
                 pass
-                # self.notes_on.append(target_note)
+                self.notes_on[target_note] = True
 
         if mode == "stop":
             if target_note in self.notes_on:
                 pass
-                # self.notes_on.remove(target_note)
+                del self.notes_on[target_note]

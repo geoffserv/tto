@@ -90,6 +90,10 @@ canvas_margin = 10
 #
 # The dict key is just an informative label and helps dedup events to prevent
 # redundant entries.
+# The dict is unordered but these events are also unordered- they're detected
+# once per main loop execution, acted upon once per main loop execution, and
+# cleared at the end.  In that sense, all we know is that they happened since
+# the last main loop execution.
 events = {}
 # Big contributors to events: tto_pygame.TtoPygame.handle_input_key()
 # Consumers: every GUISurface object's update_control()
@@ -101,23 +105,6 @@ events = {}
 #    'NA' = Unknown event type
 #    'KU' = KeyUp with keycode in 'keycode'
 #    'KD' = KeyDown with keycode in 'keycode'
-
-# For now, how intervals are defined:
-# The 'slice number' around the circle of fifths
-# 0 = Root
-# 1 = Fifth
-# 2 = Second
-# 3 = Sixth
-# 4 = Third
-# 5 = Seventh
-# 6 = Fourth
-chord_slices_dict = {1: 0,
-                     2: 2,
-                     3: 4,
-                     4: 6,
-                     5: 1,
-                     6: 3,
-                     7: 5}
 
 running = False  # Main loop running boolean.  Set to false and program ends.
 
