@@ -212,7 +212,7 @@ class GUISurfaceHelm(GUISurface):
                                 offset_degrees=self.rotate_offset_chord)
         self.draw_label(polygon.coordinates[1],
                         polygon.degrees[0],
-                        "↑",
+                        "^",
                         tto_fonts.font['large_bold'],
                         self.color_bg)
 
