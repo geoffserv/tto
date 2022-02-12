@@ -122,7 +122,8 @@ class Key(object):
         # otherwise the stops will be against the position of the note NOW
         # instead of what it was THEN
         if mode == "stop":
-            target_note = self.keyboard_keys_down[keycode]
+            if keycode in self.keyboard_keys_down:
+                target_note = self.keyboard_keys_down[keycode]
 
         tto_globals.debugger.message(
             "KEY_",
@@ -149,10 +150,13 @@ class Key(object):
         )
 
         if mode == "play":
-            if target_note not in self.notes_on:
-                tto_globals.midi.send(midi_kbnum_adj, mode)
-                self.notes_on[target_note] = True
-                self.keyboard_keys_down[keycode] = target_note
+            self.keyboard_keys_down[keycode] = target_note
+
+            if target_note in self.notes_on:
+                self.trigger(note_index, keycode, mode="stop")
+
+            tto_globals.midi.send(midi_kbnum_adj, mode)
+            self.notes_on[target_note] = True
 
         if mode == "stop":
             if keycode in self.keyboard_keys_down:
