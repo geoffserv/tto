@@ -12,14 +12,6 @@ tto_globals : Program-wide global variable module for tto.
 Classes
 -------
 Key : key, scale, and chord data class
-
-Functions
----------
-none : none
-
-Variables
----------
-none : none
 """
 
 import tto_globals
@@ -33,12 +25,21 @@ class Key(object):
         # current_scale_degree is 0-6
         self.current_scale_degree = 0
 
+        # Default octave 2
+        self.octave = 2
+
+        # c0 = 24
+        self.c0_offset = 24
+
         self.notes_on = {}  # dict containing key.notes indices currently
         # playing 0-11
-        # self.notes_on[key_index] = (key, note, octave)
-        #   key_index = index sent from tto_pygame_keyboardmap
-        #   key = self.current_key at the time of triggering the note
-        #   note = self.notes index at the time of triggering the note
+
+        self.keyboard_keys_down = {}  # dict containing event keycodes which
+        # previously triggered a keydown.  So they're presumably still down.
+        # Later when a key is lifted, check the keycode against this to
+        # figure out the key & scale degree back when it was triggered,
+        # so it's possible to know which thing to now turn off.
+        # [keycode] = target_note
 
         # 12 tones arranged by fifths and their piano keyboard key kbNum 0-11
         self.notes = [
@@ -54,7 +55,7 @@ class Key(object):
             {'noteName': 'Eb', 'sharpName': 'D#', 'kbNum': 3},
             {'noteName': 'Bb', 'sharpName': 'A#', 'kbNum': 10},
             {'noteName': 'F', 'sharpName': 'E#', 'kbNum': 5}
-                    ]
+        ]
 
         # Diatonic fifths, their associated triad chords and scale degree modes
         self.fifths = {11: {"step": 4,
@@ -100,24 +101,61 @@ class Key(object):
         )
         self.current_scale_degree = scale_degree
 
-    def trigger(self, note_index, mode="play"):
+    def trigger(self, note_index, keycode, mode="play"):
 
         # The keyboard will be sending an index of note from the key binding
-        # Need to add the scale degree and wrap at 12 to play the chord
-        #   notes according to the scale degree
-        target_note = (note_index + self.current_scale_degree % 12)
+        # Need to add the scale degree and wrap at 7 because the scale will be
+        # 0-6 (7 tones)
+        target_note = ((note_index +
+                        self.current_scale_degree)
+                       % 7)
+        # If it's 6, it's 11.  We skip the non-diatonics 6,7,8,9,10
+        if target_note == 6:
+            target_note = 11
+
+        # now offset by the key and wrap at 12.  all chromatic tones are 0-11
+        target_note = (target_note + self.current_key) % 12
+
+        # If this is a stop, we've captured the target note with the keycode
+        # as the value of self.keyboard_keys_down[keycode]
+        # get that instead.
+        # otherwise the stops will be against the position of the note NOW
+        # instead of what it was THEN
+        if mode == "stop":
+            target_note = self.keyboard_keys_down[keycode]
 
         tto_globals.debugger.message(
             "KEY_",
-            "target_note, Mode {}, value {}".format(mode, target_note)
+            "MidiCalc Mode: {}, kbcode: {}, index: {}, t_note: {}".
+            format(mode,
+                   keycode,
+                   note_index,
+                   target_note)
+        )
+
+        # calculate the midi note to target
+        midi_note_name = self.notes[target_note]['noteName']
+        midi_kbnum_base = self.notes[target_note]['kbNum']
+        midi_kbnum_adj = midi_kbnum_base + self.c0_offset + (12 * self.octave)
+
+        tto_globals.debugger.message(
+            "KEY_",
+            "MidiCalc Name: {}, Base: {}, Oct: {}, c0: {}, ** ADJ: {}".
+            format(midi_note_name,
+                   midi_kbnum_base,
+                   self.octave,
+                   self.c0_offset,
+                   midi_kbnum_adj)
         )
 
         if mode == "play":
             if target_note not in self.notes_on:
-                pass
-                # self.notes_on.append(target_note)
+                tto_globals.midi.send(midi_kbnum_adj, mode)
+                self.notes_on[target_note] = True
+                self.keyboard_keys_down[keycode] = target_note
 
         if mode == "stop":
-            if target_note in self.notes_on:
-                pass
-                # self.notes_on.remove(target_note)
+            if keycode in self.keyboard_keys_down:
+                tto_globals.midi.send(midi_kbnum_adj, mode)
+                del self.notes_on[self.keyboard_keys_down[keycode]]
+                del self.keyboard_keys_down[keycode]

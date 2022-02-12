@@ -194,6 +194,31 @@ class TtoMidi(object):
         self.transport_new_messages = True
         self.clock_pulses = 0
 
+    def send(self, note, mode="stop"):
+        mido_message = "note_off"
+        velocity = 0
+        if mode == "play":
+            mido_message = "note_on"
+            velocity = 100
+
+        tto_globals.debugger.message("MIDI",
+                                     "send: {}, vel: {}, mido_msg: {}".format(
+                                         note, velocity, mido_message))
+
+        midi_msg = mido.Message(mido_message,
+                                channel=self.channel_out,
+                                note=note,
+                                velocity=velocity)
+
+        try:
+            if "MidiOutPort" in self.ports:
+                self.ports["MidiOutPort"].send(midi_msg)
+
+        except Exception as e:
+            tto_globals.debugger.message("EXCEPTION",
+                                         "Error processing MIDI: {}".
+                                         format(e))
+
     def handle_clock(self, midi_msg):
         if midi_msg.type in ("start", "continue"):
             self.transport_play(midi_msg)
