@@ -194,16 +194,16 @@ class TtoMidi(object):
         self.transport_new_messages = True
         self.clock_pulses = 0
 
-    def send(self, note, mode="off"):
+    def send(self, note, mode="stop"):
         mido_message = "note_off"
         velocity = 0
-        if mode == "on":
+        if mode == "play":
             mido_message = "note_on"
             velocity = 100
 
         tto_globals.debugger.message("MIDI",
-                                     "send: {}, mido_msg: {}".format(
-                                         note, mido_message))
+                                     "send: {}, vel: {}, mido_msg: {}".format(
+                                         note, velocity, mido_message))
 
         midi_msg = mido.Message(mido_message,
                                 channel=self.channel_out,

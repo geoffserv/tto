@@ -116,25 +116,31 @@ class Key(object):
         # now offset by the key and wrap at 12.  all chromatic tones are 0-11
         target_note = (target_note + self.current_key) % 12
 
+        # If this is a stop, we've captured the target note with the keycode
+        # as the value of self.keyboard_keys_down[keycode]
+        # get that instead.
+        # otherwise the stops will be against the position of the note NOW
+        # instead of what it was THEN
+        if mode == "stop":
+            target_note = self.keyboard_keys_down[keycode]
+
         tto_globals.debugger.message(
             "KEY_",
-            "Mode {}, k_code {}, index {}, s_degree {}, key {} = t_note {}".
+            "MidiCalc Mode: {}, kbcode: {}, index: {}, t_note: {}".
             format(mode,
                    keycode,
                    note_index,
-                   self.current_scale_degree,
-                   self.current_key,
                    target_note)
         )
 
-        # calculate the midi note to play
+        # calculate the midi note to target
         midi_note_name = self.notes[target_note]['noteName']
         midi_kbnum_base = self.notes[target_note]['kbNum']
         midi_kbnum_adj = midi_kbnum_base + self.c0_offset + (12 * self.octave)
 
         tto_globals.debugger.message(
             "KEY_",
-            "MidiCalc name {}, base {}, oct {}, c0, {}, ** ADJ {}".
+            "MidiCalc Name: {}, Base: {}, Oct: {}, c0: {}, ** ADJ: {}".
             format(midi_note_name,
                    midi_kbnum_base,
                    self.octave,
@@ -144,12 +150,12 @@ class Key(object):
 
         if mode == "play":
             if target_note not in self.notes_on:
+                tto_globals.midi.send(midi_kbnum_adj, mode)
                 self.notes_on[target_note] = True
                 self.keyboard_keys_down[keycode] = target_note
-                tto_globals.midi.send(midi_kbnum_adj, "on")
 
         if mode == "stop":
             if keycode in self.keyboard_keys_down:
-                tto_globals.midi.send(midi_kbnum_adj, "off")
+                tto_globals.midi.send(midi_kbnum_adj, mode)
                 del self.notes_on[self.keyboard_keys_down[keycode]]
                 del self.keyboard_keys_down[keycode]
