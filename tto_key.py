@@ -12,14 +12,6 @@ tto_globals : Program-wide global variable module for tto.
 Classes
 -------
 Key : key, scale, and chord data class
-
-Functions
----------
-none : none
-
-Variables
----------
-none : none
 """
 
 import tto_globals
@@ -32,6 +24,12 @@ class Key(object):
 
         # current_scale_degree is 0-6
         self.current_scale_degree = 0
+
+        # Default octave 2
+        self.octave = 2
+
+        # c0 = 24
+        self.c0_offset = 24
 
         self.notes_on = {}  # dict containing key.notes indices currently
         # playing 0-11
@@ -129,14 +127,29 @@ class Key(object):
                    target_note)
         )
 
+        # calculate the midi note to play
+        midi_note_name = self.notes[target_note]['noteName']
+        midi_kbnum_base = self.notes[target_note]['kbNum']
+        midi_kbnum_adj = midi_kbnum_base + self.c0_offset + (12 * self.octave)
+
+        tto_globals.debugger.message(
+            "KEY_",
+            "MidiCalc name {}, base {}, oct {}, c0, {}, ** ADJ {}".
+            format(midi_note_name,
+                   midi_kbnum_base,
+                   self.octave,
+                   self.c0_offset,
+                   midi_kbnum_adj)
+        )
+
         if mode == "play":
             if target_note not in self.notes_on:
                 self.notes_on[target_note] = True
                 self.keyboard_keys_down[keycode] = target_note
+                tto_globals.midi.send(midi_kbnum_adj, "on")
 
         if mode == "stop":
-            #if target_note in self.notes_on:
-            #    del self.notes_on[target_note]
             if keycode in self.keyboard_keys_down:
+                tto_globals.midi.send(midi_kbnum_adj, "off")
                 del self.notes_on[self.keyboard_keys_down[keycode]]
                 del self.keyboard_keys_down[keycode]
