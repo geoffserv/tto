@@ -56,7 +56,7 @@ class TtoPygame(object):
 
         self.canvas = None  # Gfx display will be attached here
 
-        self.fps = 120  # Poll/Render pygame no faster than this many fps
+        self.fps = 60  # Poll/Render pygame no faster than this many fps
         self.fps_sec_per_frame = (1 / self.fps)
         self.fps_tick = time.time()  # Tracking time for fps here
 
@@ -106,7 +106,8 @@ class TtoPygame(object):
         """Non-blocking method to handle all pygame internals at a safe
         framerate.  Call this from the program main run loop.
         """
-        if (time.time() - self.fps_tick) > self.fps_sec_per_frame:
+        time_since_last_ui = (time.time() - self.fps_tick)
+        if time_since_last_ui > self.fps_sec_per_frame:
             self.handle_graphics()
             self.handle_input()
             self.handle_updates()

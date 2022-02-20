@@ -160,7 +160,8 @@ class TtoMidi(object):
         # Process incoming MIDI In, handle clock, and relay to MIDI Out ASAP
         try:
             if "MidiInPort" in self.ports:
-                for midi_msg in self.ports["MidiInPort"].iter_pending():
+                for midi_msg in self.ports["MidiInPort"].\
+                        receive(block=False):
 
                     # Relay MIDI In to MIDI Out
                     if "MidiOutPort" in self.ports:
