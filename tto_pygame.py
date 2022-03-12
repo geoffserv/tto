@@ -199,14 +199,14 @@ class TtoPygame(object):
         gui_terminal = GUISurfaceTerminal(canvas_width=950,
                                           canvas_height=260,
                                           blit_x=960,
-                                          blit_y=810)
+                                          blit_y=390)
         self.gui_surfaces.append(gui_terminal)
 
         # The transport strip showing MIDI clock info, play/stop, quant info
         gui_tstrip = GUISurfaceTransportStrip(canvas_width=950,
                                               canvas_height=50,
                                               blit_x=960,
-                                              blit_y=740)
+                                              blit_y=320)
         self.gui_surfaces.append(gui_tstrip)
 
         # A keyboard map showing all keys, mappings, button status, actions
@@ -214,12 +214,12 @@ class TtoPygame(object):
         gui_keyboard_map = GUISurfaceKeyboardMap(canvas_width=950,
                                                  canvas_height=290,
                                                  blit_x=960,
-                                                 blit_y=430)
+                                                 blit_y=10)
         self.gui_surfaces.append(gui_keyboard_map)
 
         # The control wheel developed as part of the Helm project
         gui_helm = GUISurfaceHelm(canvas_width=930,
                                   canvas_height=930,
                                   blit_x=10,
-                                  blit_y=140)
+                                  blit_y=10)
         self.gui_surfaces.append(gui_helm)
