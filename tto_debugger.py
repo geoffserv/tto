@@ -50,7 +50,7 @@ class TtoDebugger(object):
     def perf_monitor(self):
         # Non-blocking method run once per main-loop execution cycle
         # Tracks and reports loop execution speed
-        sample_size = 1000000
+        sample_size = 10000000
         self.runtime_ticks += 1
         if self.runtime_ticks > sample_size:
             self.runtime_mhz = ((sample_size / (time.time() -
