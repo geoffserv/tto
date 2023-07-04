@@ -49,15 +49,15 @@ def config_file_load(config_file):
 
 
 # These defaults apply unless overridden in the config file ['tto'] section:
-config['DEFAULT'] = {'MidiOutEnabled': 'False'}
-config['DEFAULT'] = {'MidiOutPort': 'wavestate 1 In'}
-config['DEFAULT'] = {'MidiInEnabled': 'False'}
-config['DEFAULT'] = {'MidiInPort': 'USB Midi '}
-config['DEFAULT'] = {'FullScreen': 'True'}
-config['DEFAULT'] = {'CanvasWidth': '1920'}
-config['DEFAULT'] = {'CanvasHeight': '1080'}
-config['DEFAULT'] = {'GraphicsEnabled': 'True'}
-config['DEFAULT'] = {'Powermate': 'False'}
+config['DEFAULT'] = {'MidiOutEnabled': 'False',
+                     'MidiOutPort': 'wavestate 1 In',
+                     'MidiInEnabled': 'False',
+                     'MidiInPort': 'USB Midi ',
+                     'FullScreen': 'True',
+                     'CanvasWidth': '1920',
+                     'CanvasHeight': '1080',
+                     'GraphicsEnabled': 'True',
+                     'Powermate': 'False'}
 # Create a ['tto'] section containing the above defaults:
 config['tto'] = {}
 
